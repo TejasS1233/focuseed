@@ -6,15 +6,14 @@ import android.content.Context
 import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
 import android.os.Build
+import android.graphics.Paint
 import android.view.View
-import android.view.WindowManager
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterActivity() {
     private val CHANNEL = "focus_garden/lock"
-    private var overlayView: View? = null
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -41,15 +40,10 @@ class MainActivity : FlutterActivity() {
         if (enabled) {
             val matrix = ColorMatrix().apply { setSaturation(0f) }
             val filter = ColorMatrixColorFilter(matrix)
-            val layer = view.getChildAt(0)
-            layer?.let {
-                it.setColorFilter(filter)
-            }
+            val paint = Paint().apply { colorFilter = filter }
+            view.setLayerType(View.LAYER_TYPE_HARDWARE, paint)
         } else {
-            val layer = view.getChildAt(0)
-            layer?.let {
-                it.colorFilter = null
-            }
+            view.setLayerType(View.LAYER_TYPE_HARDWARE, null)
         }
     }
 
