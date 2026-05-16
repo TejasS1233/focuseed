@@ -1,0 +1,31 @@
+# Flutter
+**/android/.gradle/
+**/android/app/build/
+**/android/.idea/
+**/android/local.properties
+**/build/
+**/.dart_tool/
+**/.packages
+**/.pub/
+**/pubspec.lock
+**/flutter_export_environment.sh
+**/*.iml
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+
+# Generated files
+**/*.g.dart
+**/*.freezed.dart
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Project design docs (not part of app code)
+docs/
+
+# OS
+.DS_Store
+Thumbs.db
