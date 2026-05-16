@@ -1,5 +1,7 @@
 # Focus Garden
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE.md)
+
 A focus timer app that turns your consistency into a living garden. Complete deep work sessions to plant and grow trees. Skip too many days and they wilt.
 
 **Two focus modes.** Soft Focus for everyday work. Hard Lock for deep work -- screen goes grayscale, notifications are suppressed (Android), and the timer cannot be stopped early. Hard lock sessions earn a 1.5x growth bonus.
@@ -59,4 +61,8 @@ Configuration points:
 
 ## License
 
-MIT
+MIT — see [LICENSE](LICENSE.md) for details.
+
+## Contributing
+
+Contributions are welcome! See [CONTRIBUTING](CONTRIBUTING.md) for guidelines.
