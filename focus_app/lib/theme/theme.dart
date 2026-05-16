@@ -225,10 +225,10 @@ class UIEffects {
     Color? borderColor,
   }) {
     return BoxDecoration(
-      color: baseColor.withValues(alpha: opacity),
+      color: baseColor.withOpacity(opacity),
       borderRadius: BorderRadius.circular(12 * radiusScale),
       border: Border.all(
-        color: (borderColor ?? UIColors.white).withValues(alpha: 0.2),
+        color: (borderColor ?? UIColors.white).withOpacity(0.2),
         width: UIBorder.medium,
       ),
     );
@@ -243,11 +243,11 @@ class UIEffects {
   }) {
     final isDark = baseColor.computeLuminance() < 0.5;
     final lightColor = isDark
-        ? UIColors.white.withValues(alpha: 0.1 * intensity)
-        : UIColors.white.withValues(alpha: 0.7 * intensity);
+        ? UIColors.white.withOpacity(0.1 * intensity)
+        : UIColors.white.withOpacity(0.7 * intensity);
     final darkColor = isDark
-        ? UIColors.black.withValues(alpha: 0.5 * intensity)
-        : UIColors.black.withValues(alpha: 0.15 * intensity);
+        ? UIColors.black.withOpacity(0.5 * intensity)
+        : UIColors.black.withOpacity(0.15 * intensity);
 
     final offset = isPressed ? 2.0 : 4.0 * intensity;
     final blur = isPressed ? 4.0 : 8.0 * intensity;
@@ -296,7 +296,7 @@ class UIEffects {
   }) {
     return [
       BoxShadow(
-        color: color.withValues(alpha: intensity),
+        color: color.withOpacity(intensity),
         blurRadius: spread * 2,
         spreadRadius: spread / 2,
       ),

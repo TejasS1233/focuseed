@@ -99,7 +99,7 @@ class CustomBottomNavBar extends StatelessWidget {
         boxShadow: defaultElevation > 0
             ? [
                 BoxShadow(
-                  color: UIColors.gray900.withValues(alpha: 0.1),
+                  color: UIColors.gray900.withOpacity(0.1),
                   blurRadius: defaultElevation * 2,
                   offset: Offset(0, -defaultElevation / 2),
                 ),

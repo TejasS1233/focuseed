@@ -95,7 +95,7 @@ class _AnimatedDialogState extends State<_AnimatedDialog>
               borderRadius: BorderRadius.circular(UIRadius.lg),
             ),
             elevation: 8,
-            shadowColor: UIColors.black.withValues(alpha: 0.15),
+            shadowColor: UIColors.black.withOpacity(0.15),
             child: Padding(
               padding: const EdgeInsets.all(UISpacing.lg),
               child: Column(
