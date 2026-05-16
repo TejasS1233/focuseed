@@ -1,20 +1,23 @@
 import 'package:flutter/services.dart';
 
 class LockService {
-  static const _channel = MethodChannel('com.focusapp/lock');
+  static const _channel = MethodChannel('focus_garden/lock');
 
   Future<void> startLock({required int durationMinutes}) async {
-    await _channel.invokeMethod('startLock', {
-      'durationMinutes': durationMinutes,
-    });
+    try {
+      await _channel.invokeMethod('startLock', {
+        'durationMinutes': durationMinutes,
+      });
+    } on MissingPluginException {
+      // Android native code not available
+    }
   }
 
   Future<void> stopLock() async {
-    await _channel.invokeMethod('stopLock');
-  }
-
-  Future<bool> isLocked() async {
-    final result = await _channel.invokeMethod<bool>('isLocked');
-    return result ?? false;
+    try {
+      await _channel.invokeMethod('stopLock');
+    } on MissingPluginException {
+      // Android native code not available
+    }
   }
 }
