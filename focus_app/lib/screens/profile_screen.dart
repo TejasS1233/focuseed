@@ -14,7 +14,28 @@ class ProfileScreen extends ConsumerWidget {
     final session = ref.watch(sessionProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Profile')),
+      appBar: AppBar(
+        title: const Text('Profile'),
+        actions: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                isDark ? Icons.dark_mode : Icons.light_mode,
+                size: 18,
+                color: UIColors.gray500,
+              ),
+              Switch(
+                value: isDark,
+                onChanged: (v) {
+                  ref.read(themeModeProvider.notifier).state = v;
+                },
+              ),
+            ],
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
       body: Padding(
         padding: const EdgeInsets.all(UISpacing.md),
         child: Column(
@@ -87,19 +108,6 @@ class ProfileScreen extends ConsumerWidget {
                   textAlign: TextAlign.center,
                 ),
               ),
-            ),
-            const Spacer(),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text('Dark Mode', style: UITypography.body),
-                Switch(
-                  value: isDark,
-                  onChanged: (v) {
-                    ref.read(themeModeProvider.notifier).state = v;
-                  },
-                ),
-              ],
             ),
           ],
         ),

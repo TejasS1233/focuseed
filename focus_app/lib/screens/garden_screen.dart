@@ -3,11 +3,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../state/garden_state.dart';
 import '../theme/theme.dart';
 
-class GardenScreen extends ConsumerWidget {
+class GardenScreen extends ConsumerStatefulWidget {
   const GardenScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<GardenScreen> createState() => _GardenScreenState();
+}
+
+class _GardenScreenState extends ConsumerState<GardenScreen> {
+  @override
+  Widget build(BuildContext context) {
     final garden = ref.watch(gardenProvider);
 
     return Scaffold(

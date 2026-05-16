@@ -70,9 +70,10 @@ class SessionNotifier extends Notifier<SessionState> {
       state = state.copyWith(elapsedSeconds: now - _startSeconds);
     });
 
-    if (mode == 'hard') {
-      LockService().startLock(durationMinutes: durationMinutes);
-    }
+    LockService().startLock(
+      durationMinutes: durationMinutes,
+      hardLock: mode == 'hard',
+    );
     if (ambientSound != null) {
       AudioService().play(ambientSound);
     }

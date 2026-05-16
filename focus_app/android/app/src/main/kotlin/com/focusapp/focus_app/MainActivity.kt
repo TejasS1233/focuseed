@@ -1,19 +1,23 @@
 package com.focusapp.focus_app
 
-import android.app.ActivityManager
 import android.app.NotificationManager
 import android.content.Context
 import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
-import android.os.Build
 import android.graphics.Paint
+import android.os.Build
 import android.view.View
+import android.view.WindowManager
+import android.widget.FrameLayout
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterActivity() {
     private val CHANNEL = "focus_garden/lock"
+    private var overlayView: View? = null
+    private var isHardLock = false
+    private var focusLockActive = false
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -21,13 +25,23 @@ class MainActivity : FlutterActivity() {
             when (call.method) {
                 "startLock" -> {
                     val durationMinutes = call.argument<Int>("durationMinutes") ?: 30
+                    isHardLock = call.argument<Boolean>("hardLock") ?: false
                     applyGrayscale(true)
-                    suppressNotifications(true)
+                    showFocusOverlay()
+                    if (isHardLock) {
+                        setSecure(true)
+                        suppressNotifications(true)
+                        enableImmersiveMode()
+                    }
                     result.success(true)
                 }
                 "stopLock" -> {
                     applyGrayscale(false)
+                    hideFocusOverlay()
+                    setSecure(false)
                     suppressNotifications(false)
+                    disableImmersiveMode()
+                    isHardLock = false
                     result.success(true)
                 }
                 else -> result.notImplemented()
@@ -47,6 +61,68 @@ class MainActivity : FlutterActivity() {
         }
     }
 
+    private fun showFocusOverlay() {
+        if (overlayView != null) return
+
+        val contentParent = findViewById<FrameLayout>(android.R.id.content)
+        val overlay = layoutInflater.inflate(R.layout.focus_overlay, contentParent, false)
+        contentParent.addView(overlay)
+        overlayView = overlay
+    }
+
+    private fun hideFocusOverlay() {
+        overlayView?.let {
+            try {
+                val contentParent = findViewById<FrameLayout>(android.R.id.content)
+                contentParent.removeView(it)
+            } catch (_: Exception) {}
+            overlayView = null
+        }
+    }
+
+    private fun setSecure(enabled: Boolean) {
+        if (enabled) {
+            window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        } else {
+            window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        }
+    }
+
+    private fun enableImmersiveMode() {
+        focusLockActive = true
+        window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
+            if (focusLockActive && visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
+                window.decorView.systemUiVisibility = (
+                    View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                    or View.SYSTEM_UI_FLAG_FULLSCREEN
+                    or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                )
+            }
+        }
+        window.decorView.systemUiVisibility = (
+            View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+            or View.SYSTEM_UI_FLAG_FULLSCREEN
+            or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+        )
+    }
+
+    private fun disableImmersiveMode() {
+        focusLockActive = false
+        window.decorView.setOnSystemUiVisibilityChangeListener(null)
+        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (focusLockActive && hasFocus) {
+            window.decorView.systemUiVisibility = (
+                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                or View.SYSTEM_UI_FLAG_FULLSCREEN
+                or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+            )
+        }
+    }
+
     private fun suppressNotifications(suppress: Boolean) {
         val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -55,5 +131,11 @@ class MainActivity : FlutterActivity() {
                 else NotificationManager.INTERRUPTION_FILTER_ALL
             )
         }
+    }
+
+    override fun onDestroy() {
+        hideFocusOverlay()
+        disableImmersiveMode()
+        super.onDestroy()
     }
 }

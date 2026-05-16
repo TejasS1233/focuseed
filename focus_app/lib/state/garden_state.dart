@@ -12,7 +12,18 @@ class GardenState {
 
 class GardenNotifier extends Notifier<GardenState> {
   @override
-  GardenState build() => GardenState();
+  GardenState build() {
+    ref.listen(userProvider, (_, next) {
+      if (next != null) {
+        loadTrees(next);
+      }
+    });
+    final user = ref.read(userProvider);
+    if (user != null) {
+      loadTrees(user);
+    }
+    return GardenState();
+  }
 
   Future<void> loadTrees(String userId) async {
     final dao = TreeDao(ref.read(databaseProvider));
