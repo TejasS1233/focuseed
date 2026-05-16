@@ -23,6 +23,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     final name = _controller.text.trim();
     final userId = name.isEmpty ? _generateId() : name;
     ref.read(userProvider.notifier).state = userId;
+    Navigator.pop(context);
   }
 
   String _generateId() => 'user_${DateTime.now().millisecondsSinceEpoch}';
