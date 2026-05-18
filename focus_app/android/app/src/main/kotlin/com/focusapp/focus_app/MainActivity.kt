@@ -30,19 +30,23 @@ class MainActivity : FlutterActivity() {
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, APP_CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {
                 "getInstalledApps" -> {
-                    val packages = packageManager.getInstalledApplications(0)
-                    val appList = packages
-                        .filter { app ->
-                            app.packageName != "com.focusapp.focus_app" &&
-                            (app.flags and android.content.pm.ApplicationInfo.FLAG_SYSTEM) == 0
-                        }
-                        .map { app ->
-                            mapOf(
-                                "packageName" to app.packageName,
-                                "name" to packageManager.getApplicationLabel(app).toString()
-                            )
-                        }
-                    result.success(appList)
+                    try {
+                        val packages = packageManager.getInstalledApplications(0)
+                        val appList = packages
+                            .filter { app ->
+                                app.packageName != "com.focusapp.focus_app" &&
+                                (app.flags and android.content.pm.ApplicationInfo.FLAG_SYSTEM) == 0
+                            }
+                            .map { app ->
+                                mapOf(
+                                    "packageName" to app.packageName,
+                                    "name" to packageManager.getApplicationLabel(app).toString()
+                                )
+                            }
+                        result.success(appList)
+                    } catch (e: Exception) {
+                        result.success(emptyList<Map<String, String>>())
+                    }
                 }
                 "hasOverlayPermission" -> {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {

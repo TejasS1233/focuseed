@@ -58,13 +58,13 @@ class _GardenTreeTile extends StatelessWidget {
 
   const _GardenTreeTile({required this.tree});
 
-  IconData _icon() {
-    if (!tree.isAlive) return Icons.error_outline;
+  String _emoji() {
+    if (!tree.isAlive) return '🪦';
     switch (tree.species) {
-      case 'oak': return Icons.eco;
-      case 'pine': return Icons.eco;
-      case 'cherry': return Icons.local_florist;
-      default: return Icons.eco;
+      case 'oak': return '🌳';
+      case 'pine': return '🌲';
+      case 'cherry': return '🌸';
+      default: return '🌱';
     }
   }
 
@@ -92,7 +92,7 @@ class _GardenTreeTile extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(_icon(), color: _color(), size: 36),
+          Text(_emoji(), style: const TextStyle(fontSize: 36)),
           const SizedBox(height: 4),
           Text(tree.species, style: UITypography.caption),
           if (tree.isAlive)
@@ -100,7 +100,7 @@ class _GardenTreeTile extends StatelessWidget {
               margin: const EdgeInsets.only(top: 2),
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
               decoration: BoxDecoration(
-                color: Colors.green[50],
+                color: Colors.green.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text('Stage ${tree.growthStage}',

@@ -140,20 +140,17 @@ class _TreeTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final stage = tree.growthStage;
     final alive = tree.isAlive;
+    final cs = Theme.of(context).colorScheme;
     return Container(
       decoration: BoxDecoration(
-        color: alive ? UIColors.gray50 : UIColors.gray200,
+        color: alive ? cs.surface : cs.surfaceVariant,
         borderRadius: BorderRadius.circular(UIRadius.md),
-        border: Border.all(color: alive ? UIColors.gray200 : UIColors.gray300),
+        border: Border.all(color: alive ? cs.outlineVariant : cs.outline),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            alive ? Icons.eco : Icons.error_outline,
-            color: alive ? Colors.green : UIColors.gray500,
-            size: 32,
-          ),
+          Text(alive ? '🌱' : '🪦', style: const TextStyle(fontSize: 28)),
           Text('Stage $stage',
             style: UITypography.caption),
         ],

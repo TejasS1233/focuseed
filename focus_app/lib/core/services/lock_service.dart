@@ -26,14 +26,11 @@ class LockService {
 
   static Future<List<Map<String, String>>> getInstalledApps() async {
     try {
-      final result = await _appChannel.invokeMethod('getInstalledApps');
-      return (result as List).map((e) {
-        final map = e as Map;
-        return {
-          'packageName': map['packageName'].toString(),
-          'name': map['name'].toString(),
-        };
-      }).toList();
+      final result = await _appChannel.invokeMethod('getInstalledApps')
+          .timeout(const Duration(seconds: 5));
+      return (result as List)
+          .map((e) => Map<String, String>.from(e as Map))
+          .toList();
     } catch (_) {
       return [];
     }
