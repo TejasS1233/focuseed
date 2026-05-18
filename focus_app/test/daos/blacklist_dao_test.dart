@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:focus_app/core/db/database.dart';
 import 'package:focus_app/core/db/daos/blacklist_dao.dart';
