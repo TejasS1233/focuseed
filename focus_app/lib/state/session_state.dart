@@ -183,10 +183,11 @@ class SessionNotifier extends Notifier<SessionState> {
   void onAppLifecycleChange(AppLifecycleState lifecycleState) {
     if (state.status != SessionStatus.running) return;
     if (lifecycleState == AppLifecycleState.paused) {
-      _timer?.cancel();
-    }
-    if (lifecycleState == AppLifecycleState.resumed && state.mode == 'hard') {
-      endSession(completed: false);
+      if (state.mode == 'hard') {
+        endSession(completed: false);
+      } else {
+        _timer?.cancel();
+      }
     }
   }
 }
