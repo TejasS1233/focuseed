@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../state/app_state.dart';
 import '../state/session_state.dart';
 import '../theme/theme.dart';
+import 'blacklist_screen.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -108,6 +109,18 @@ class ProfileScreen extends ConsumerWidget {
                   textAlign: TextAlign.center,
                 ),
               ),
+            ),
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.block),
+              title: const Text('Blocked Apps'),
+              subtitle: const Text('Choose apps to block during hard lock'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(
+                  builder: (_) => const BlacklistScreen(),
+                ));
+              },
             ),
           ],
         ),

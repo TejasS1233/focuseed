@@ -4,11 +4,16 @@ class LockService {
   static const _channel = MethodChannel('focus_garden/lock');
   static const _appChannel = MethodChannel('focus_garden/apps');
 
-  Future<void> startLock({required int durationMinutes, bool hardLock = false}) async {
+  Future<void> startLock({
+    required int durationMinutes,
+    bool hardLock = false,
+    List<String> blacklist = const [],
+  }) async {
     try {
       await _channel.invokeMethod('startLock', {
         'durationMinutes': durationMinutes,
         'hardLock': hardLock,
+        'blacklist': blacklist,
       });
     } on MissingPluginException {
       // Android native code not available

@@ -107,6 +107,37 @@ class SessionNotifier extends Notifier<SessionState> {
     );
   }
 
+  Future<void> startSessionWithBlacklist({
+    required String mode,
+    required int durationMinutes,
+    String? intention,
+    String? ambientSound,
+    List<String> blacklist = const [],
+  }) async {
+    state = SessionState(
+      status: SessionStatus.running,
+      mode: mode,
+      setDurationSeconds: durationMinutes * 60,
+      intention: intention,
+      ambientSound: ambientSound,
+    );
+    _startSeconds = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+      state = state.copyWith(elapsedSeconds: now - _startSeconds);
+    });
+    if (mode == 'hard') {
+      await LockService().startLock(
+        durationMinutes: durationMinutes,
+        hardLock: true,
+        blacklist: blacklist,
+      );
+    }
+    if (ambientSound != null) {
+      AudioService().play(ambientSound);
+    }
+  }
+
 }
 
 final sessionProvider = NotifierProvider<SessionNotifier, SessionState>(

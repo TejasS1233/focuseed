@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../state/session_state.dart';
+import '../state/blacklist_state.dart';
 import '../theme/theme.dart';
 import 'focus_screen.dart';
+import 'permission_check_screen.dart';
 
 class SessionSetupScreen extends ConsumerStatefulWidget {
   const SessionSetupScreen({super.key});
@@ -31,17 +33,27 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
     super.dispose();
   }
 
-  void _start() {
+  Future<void> _start() async {
     _intention = _intentionController.text.trim();
     if (_intention!.isEmpty) _intention = null;
 
-    ref.read(sessionProvider.notifier).startSession(
+    if (_mode == 'hard') {
+      final canProceed = await PermissionCheckDialog.canStartHardLock(context);
+      if (!canProceed) return;
+    }
+
+    final blacklistState = ref.read(blacklistProvider);
+    final blacklisted = blacklistState.blacklistedPackages;
+
+    ref.read(sessionProvider.notifier).startSessionWithBlacklist(
       mode: _mode,
       durationMinutes: _durationMinutes,
       intention: _intention,
       ambientSound: _ambientSound,
+      blacklist: _mode == 'hard' ? blacklisted : [],
     );
 
+    if (!context.mounted) return;
     Navigator.pushReplacement(context, MaterialPageRoute(
       builder: (_) => const FocusScreen(),
     ));

@@ -22,6 +22,8 @@ class MainActivity : FlutterActivity() {
     private var overlayView: View? = null
     private var isHardLock = false
     private var focusLockActive = false
+    private var overlayManager: OverlayManager? = null
+    private var currentBlacklist: Set<String> = emptySet()
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -78,13 +80,19 @@ class MainActivity : FlutterActivity() {
                 "startLock" -> {
                     val durationMinutes = call.argument<Int>("durationMinutes") ?: 30
                     isHardLock = call.argument<Boolean>("hardLock") ?: false
+                    val blacklistArg = call.argument<List<String>>("blacklist") ?: emptyList()
+                    currentBlacklist = blacklistArg.toSet()
+
                     applyGrayscale(true)
                     showFocusOverlay()
+
                     if (isHardLock) {
                         setSecure(true)
                         suppressNotifications(true)
                         enableImmersiveMode()
+                        startForegroundService()
                     }
+
                     result.success(true)
                 }
                 "stopLock" -> {
@@ -93,11 +101,24 @@ class MainActivity : FlutterActivity() {
                     setSecure(false)
                     suppressNotifications(false)
                     disableImmersiveMode()
+                    stopForegroundService()
+                    overlayManager?.hide()
                     isHardLock = false
                     result.success(true)
                 }
                 else -> result.notImplemented()
             }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        val blacklistedApp = intent.getStringExtra("blacklisted_app")
+        if (blacklistedApp != null && Settings.canDrawOverlays(this)) {
+            if (overlayManager == null) {
+                overlayManager = OverlayManager(this)
+            }
+            overlayManager?.show()
         }
     }
 
@@ -183,6 +204,20 @@ class MainActivity : FlutterActivity() {
                 else NotificationManager.INTERRUPTION_FILTER_ALL
             )
         }
+    }
+
+    private fun startForegroundService() {
+        val intent = Intent(this, FocusForegroundService::class.java)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(intent)
+        } else {
+            startService(intent)
+        }
+    }
+
+    private fun stopForegroundService() {
+        val intent = Intent(this, FocusForegroundService::class.java)
+        stopService(intent)
     }
 
     override fun onDestroy() {
