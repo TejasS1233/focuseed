@@ -20,21 +20,22 @@ class BlacklistNotifier extends Notifier<BlacklistState> {
   }
 
   Future<void> togglePackage(String packageName) async {
-    final dao = BlacklistDao(ref.read(databaseProvider));
-    final isCurrentlyBlacklisted = state.blacklistedPackages.contains(packageName);
+    final currently = state.blacklistedPackages.contains(packageName);
+    final updated = currently
+        ? state.blacklistedPackages.where((p) => p != packageName).toList()
+        : [...state.blacklistedPackages, packageName];
 
-    if (isCurrentlyBlacklisted) {
-      await dao.remove(packageName);
-      state = BlacklistState(
-        blacklistedPackages: state.blacklistedPackages.where((p) => p != packageName).toList(),
-        isLoading: false,
-      );
-    } else {
-      await dao.add(packageName);
-      state = BlacklistState(
-        blacklistedPackages: [...state.blacklistedPackages, packageName],
-        isLoading: false,
-      );
+    state = BlacklistState(blacklistedPackages: updated, isLoading: false);
+
+    try {
+      final dao = BlacklistDao(ref.read(databaseProvider));
+      if (currently) {
+        await dao.remove(packageName);
+      } else {
+        await dao.add(packageName);
+      }
+    } catch (e) {
+      state = BlacklistState(blacklistedPackages: state.blacklistedPackages, isLoading: false);
     }
   }
 }
