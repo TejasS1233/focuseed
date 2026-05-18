@@ -95,7 +95,7 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
                 )),
             ],
             const SizedBox(height: UISpacing.lg),
-            Icon(Icons.park, size: 64, color: Colors.green[300]),
+            Icon(Icons.eco, size: 64, color: Colors.green[300]),
             const SizedBox(height: UISpacing.xl),
             if (session.status == SessionStatus.running) ...[
               SizedBox(

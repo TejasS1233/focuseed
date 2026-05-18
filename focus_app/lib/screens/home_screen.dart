@@ -37,7 +37,7 @@ class HomeScreen extends ConsumerWidget {
                 ),
                 const SizedBox(width: UISpacing.sm),
                 _StatCard(
-                  icon: Icons.park,
+                  icon: Icons.eco,
                   label: 'Trees',
                   value: '$aliveTrees/$totalTrees',
                 ),
@@ -149,7 +149,7 @@ class _TreeTile extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
-            alive ? Icons.park : Icons.auto_awesome,
+            alive ? Icons.eco : Icons.error_outline,
             color: alive ? Colors.green : UIColors.gray500,
             size: 32,
           ),

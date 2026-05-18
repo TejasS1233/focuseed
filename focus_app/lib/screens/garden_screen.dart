@@ -24,7 +24,7 @@ class _GardenScreenState extends ConsumerState<GardenScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.park, size: 80, color: UIColors.gray300),
+                      Icon(Icons.eco, size: 80, color: UIColors.gray300),
                       const SizedBox(height: UISpacing.md),
                       Text('Your garden is empty',
                         style: UITypography.heading3),
@@ -59,12 +59,12 @@ class _GardenTreeTile extends StatelessWidget {
   const _GardenTreeTile({required this.tree});
 
   IconData _icon() {
-    if (!tree.isAlive) return Icons.auto_awesome;
+    if (!tree.isAlive) return Icons.error_outline;
     switch (tree.species) {
-      case 'oak': return Icons.forest;
-      case 'pine': return Icons.park;
+      case 'oak': return Icons.eco;
+      case 'pine': return Icons.eco;
       case 'cherry': return Icons.local_florist;
-      default: return Icons.park;
+      default: return Icons.eco;
     }
   }
 
