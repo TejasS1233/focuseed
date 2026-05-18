@@ -61,8 +61,15 @@ class Achievements extends Table {
   Set<Column> get primaryKey => {id};
 }
 
+class BlacklistEntry extends Table {
+  TextColumn get packageName => text()();
+
+  @override
+  Set<Column> get primaryKey => {packageName};
+}
+
 @DriftDatabase(
-  tables: [Users, Sessions, Trees, Achievements],
+  tables: [Users, Sessions, Trees, Achievements, BlacklistEntry],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
