@@ -56,6 +56,7 @@ class SessionState {
 class SessionNotifier extends Notifier<SessionState> {
   Timer? _timer;
   int _startSeconds = 0;
+  int _pausedElapsed = 0;
 
   @override
   SessionState build() => SessionState();
@@ -79,10 +80,7 @@ class SessionNotifier extends Notifier<SessionState> {
       userId: userId,
     );
     _startSeconds = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-      state = state.copyWith(elapsedSeconds: now - _startSeconds);
-    });
+    _startTimer();
 
     await LockService().startLock(
       durationMinutes: durationMinutes,
@@ -95,42 +93,47 @@ class SessionNotifier extends Notifier<SessionState> {
 
   void pauseSession() {
     _timer?.cancel();
+    _pausedElapsed = state.elapsedSeconds;
     AudioService().pause();
     state = state.copyWith(status: SessionStatus.paused);
   }
 
   void resumeSession() {
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-      state = state.copyWith(elapsedSeconds: now - _startSeconds);
-    });
+    _startSeconds = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    _startTimer();
     if (state.ambientSound != null) {
       AudioService().play(state.ambientSound!);
     }
     state = state.copyWith(status: SessionStatus.running);
   }
 
-  Future<void> endSession({required bool completed}) async {
+  void endSession({required bool completed}) {
     _timer?.cancel();
     if (state.mode == 'hard') {
-      await LockService().stopLock();
+      LockService().stopLock();
     }
     AudioService().stop();
-
     _persistSession(completed);
     state = state.copyWith(
       status: completed ? SessionStatus.completed : SessionStatus.abandoned,
     );
   }
 
-  Future<void> _persistSession(bool completed) async {
+  void _startTimer() {
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+      state = state.copyWith(elapsedSeconds: _pausedElapsed + (now - _startSeconds));
+    });
+  }
+
+  void _persistSession(bool completed) {
     final userId = ref.read(userProvider);
     final sessionId = state.sessionId;
     if (userId == null || sessionId == null) return;
 
     final dao = SessionDao(ref.read(databaseProvider));
     final now = DateTime.now();
-    await dao.insertSession(Session(
+    dao.insertSession(Session(
       id: sessionId,
       userId: userId,
       mode: state.mode,
@@ -162,10 +165,7 @@ class SessionNotifier extends Notifier<SessionState> {
       userId: userId,
     );
     _startSeconds = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-      state = state.copyWith(elapsedSeconds: now - _startSeconds);
-    });
+    _startTimer();
     if (mode == 'hard') {
       await LockService().startLock(
         durationMinutes: durationMinutes,
@@ -180,7 +180,10 @@ class SessionNotifier extends Notifier<SessionState> {
 
   void onAppLifecycleChange(AppLifecycleState lifecycleState) {
     if (state.status != SessionStatus.running) return;
-    if (lifecycleState == AppLifecycleState.paused && state.mode == 'hard') {
+    if (lifecycleState == AppLifecycleState.paused) {
+      _timer?.cancel();
+    }
+    if (lifecycleState == AppLifecycleState.resumed && state.mode == 'hard') {
       endSession(completed: false);
     }
   }

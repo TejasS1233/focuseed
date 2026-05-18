@@ -163,31 +163,32 @@ class _ModeButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(UISpacing.md),
         decoration: BoxDecoration(
-          color: selected ? UIColors.primary : UIColors.white,
+          color: selected ? cs.primary : cs.surface,
           borderRadius: BorderRadius.circular(UIRadius.md),
           border: Border.all(
-            color: selected ? UIColors.primary : UIColors.gray300,
+            color: selected ? cs.primary : cs.outline,
           ),
         ),
         child: Column(
           children: [
             Icon(icon,
-              color: selected ? UIColors.white : UIColors.primary),
+              color: selected ? cs.onPrimary : cs.primary),
             const SizedBox(height: 4),
             Text(label,
               style: TextStyle(
-                color: selected ? UIColors.white : UIColors.foreground,
+                color: selected ? cs.onPrimary : cs.onSurface,
                 fontWeight: FontWeight.w600,
               )),
             Text(desc,
               style: TextStyle(
                 fontSize: 12,
-                color: selected ? UIColors.white : UIColors.gray500,
+                color: selected ? cs.onPrimary : cs.onSurfaceVariant,
               )),
           ],
         ),

@@ -15,26 +15,26 @@ class LockService {
         'hardLock': hardLock,
         'blacklist': blacklist,
       });
-    } on MissingPluginException {
-      // Android native code not available
-    }
+    } catch (_) {}
   }
 
   Future<void> stopLock() async {
     try {
       await _channel.invokeMethod('stopLock');
-    } on MissingPluginException {
-      // Android native code not available
-    }
+    } catch (_) {}
   }
 
   static Future<List<Map<String, String>>> getInstalledApps() async {
     try {
       final result = await _appChannel.invokeMethod('getInstalledApps');
-      return (result as List)
-          .map((e) => Map<String, String>.from(e as Map))
-          .toList();
-    } on MissingPluginException {
+      return (result as List).map((e) {
+        final map = e as Map;
+        return {
+          'packageName': map['packageName'].toString(),
+          'name': map['name'].toString(),
+        };
+      }).toList();
+    } catch (_) {
       return [];
     }
   }
@@ -42,7 +42,7 @@ class LockService {
   static Future<bool> hasOverlayPermission() async {
     try {
       return await _appChannel.invokeMethod('hasOverlayPermission') as bool;
-    } on MissingPluginException {
+    } catch (_) {
       return false;
     }
   }
@@ -50,15 +50,13 @@ class LockService {
   static Future<void> openOverlaySettings() async {
     try {
       await _appChannel.invokeMethod('openOverlaySettings');
-    } on MissingPluginException {
-      // ignore
-    }
+    } catch (_) {}
   }
 
   static Future<bool> isAccessibilityServiceEnabled() async {
     try {
       return await _appChannel.invokeMethod('isAccessibilityServiceEnabled') as bool;
-    } on MissingPluginException {
+    } catch (_) {
       return false;
     }
   }
@@ -66,8 +64,6 @@ class LockService {
   static Future<void> openAccessibilitySettings() async {
     try {
       await _appChannel.invokeMethod('openAccessibilitySettings');
-    } on MissingPluginException {
-      // ignore
-    }
+    } catch (_) {}
   }
 }

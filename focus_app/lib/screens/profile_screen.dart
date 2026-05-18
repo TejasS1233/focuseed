@@ -139,16 +139,17 @@ class _StatsTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(UISpacing.md),
       decoration: BoxDecoration(
-        color: UIColors.white,
+        color: cs.surface,
         borderRadius: BorderRadius.circular(UIRadius.md),
-        border: Border.all(color: UIColors.gray200),
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: Column(
         children: [
-          Icon(icon, color: UIColors.primary, size: 20),
+          Icon(icon, color: cs.primary, size: 20),
           const SizedBox(height: 4),
           Text(value, style: UITypography.heading3),
           Text(label, style: UITypography.caption),

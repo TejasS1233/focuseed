@@ -80,12 +80,13 @@ class _GardenTreeTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       decoration: BoxDecoration(
-        color: tree.isAlive ? UIColors.white : UIColors.gray100,
+        color: tree.isAlive ? cs.surface : cs.surfaceVariant,
         borderRadius: BorderRadius.circular(UIRadius.md),
         border: Border.all(
-          color: tree.isAlive ? UIColors.gray200 : UIColors.gray300,
+          color: tree.isAlive ? cs.outlineVariant : cs.outline,
         ),
       ),
       child: Column(
