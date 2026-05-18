@@ -56,7 +56,8 @@ class SessionState {
 class SessionNotifier extends Notifier<SessionState> {
   Timer? _timer;
   int _startSeconds = 0;
-  int _pausedElapsed = 0;
+  final AudioService _audio = AudioService();
+  final LockService _lock = LockService();
 
   @override
   SessionState build() => SessionState();
@@ -80,50 +81,48 @@ class SessionNotifier extends Notifier<SessionState> {
       userId: userId,
     );
     _startSeconds = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-    _startTimer();
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+      state = state.copyWith(elapsedSeconds: now - _startSeconds);
+    });
 
-    await LockService().startLock(
+    await     _lock.startLock(
       durationMinutes: durationMinutes,
       hardLock: mode == 'hard',
     );
     if (ambientSound != null) {
-      AudioService().play(ambientSound);
+      _audio.play(ambientSound);
     }
   }
 
   void pauseSession() {
     _timer?.cancel();
-    _pausedElapsed = state.elapsedSeconds;
-    AudioService().pause();
+    _audio.pause();
     state = state.copyWith(status: SessionStatus.paused);
   }
 
   void resumeSession() {
     _startSeconds = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-    _startTimer();
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+      state = state.copyWith(elapsedSeconds: now - _startSeconds);
+    });
     if (state.ambientSound != null) {
-      AudioService().play(state.ambientSound!);
+      _audio.play(state.ambientSound!);
     }
     state = state.copyWith(status: SessionStatus.running);
   }
 
-  void endSession({required bool completed}) {
+  Future<void> endSession({required bool completed}) async {
     _timer?.cancel();
     if (state.mode == 'hard') {
-      LockService().stopLock();
+      await _lock.stopLock();
     }
-    AudioService().stop();
+    _audio.stop();
     _persistSession(completed);
     state = state.copyWith(
       status: completed ? SessionStatus.completed : SessionStatus.abandoned,
     );
-  }
-
-  void _startTimer() {
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-      state = state.copyWith(elapsedSeconds: _pausedElapsed + (now - _startSeconds));
-    });
   }
 
   void _persistSession(bool completed) {
@@ -165,16 +164,19 @@ class SessionNotifier extends Notifier<SessionState> {
       userId: userId,
     );
     _startSeconds = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-    _startTimer();
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+      state = state.copyWith(elapsedSeconds: now - _startSeconds);
+    });
     if (mode == 'hard') {
-      await LockService().startLock(
+      await _lock.startLock(
         durationMinutes: durationMinutes,
         hardLock: true,
         blacklist: blacklist,
       );
     }
     if (ambientSound != null) {
-      AudioService().play(ambientSound);
+      _audio.play(ambientSound);
     }
   }
 

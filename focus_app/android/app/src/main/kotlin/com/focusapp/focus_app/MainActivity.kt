@@ -31,12 +31,17 @@ class MainActivity : FlutterActivity() {
             when (call.method) {
                 "getInstalledApps" -> {
                     val packages = packageManager.getInstalledApplications(0)
-                    val appList = packages.map { app ->
-                        mapOf(
-                            "packageName" to app.packageName,
-                            "name" to packageManager.getApplicationLabel(app).toString()
-                        )
-                    }
+                    val appList = packages
+                        .filter { app ->
+                            app.packageName != "com.focusapp.focus_app" &&
+                            (app.flags and android.content.pm.ApplicationInfo.FLAG_SYSTEM) == 0
+                        }
+                        .map { app ->
+                            mapOf(
+                                "packageName" to app.packageName,
+                                "name" to packageManager.getApplicationLabel(app).toString()
+                            )
+                        }
                     result.success(appList)
                 }
                 "hasOverlayPermission" -> {
