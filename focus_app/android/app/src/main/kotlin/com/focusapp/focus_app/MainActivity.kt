@@ -2,10 +2,13 @@ package com.focusapp.focus_app
 
 import android.app.NotificationManager
 import android.content.Context
+import android.content.Intent
 import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
 import android.graphics.Paint
+import android.net.Uri
 import android.os.Build
+import android.provider.Settings
 import android.view.View
 import android.view.WindowManager
 import android.widget.FrameLayout
@@ -15,12 +18,61 @@ import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterActivity() {
     private val CHANNEL = "focus_garden/lock"
+    private val APP_CHANNEL = "focus_garden/apps"
     private var overlayView: View? = null
     private var isHardLock = false
     private var focusLockActive = false
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, APP_CHANNEL).setMethodCallHandler { call, result ->
+            when (call.method) {
+                "getInstalledApps" -> {
+                    val packages = packageManager.getInstalledApplications(0)
+                    val appList = packages.map { app ->
+                        mapOf(
+                            "packageName" to app.packageName,
+                            "name" to packageManager.getApplicationLabel(app).toString()
+                        )
+                    }
+                    result.success(appList)
+                }
+                "hasOverlayPermission" -> {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        result.success(Settings.canDrawOverlays(this))
+                    } else {
+                        result.success(true)
+                    }
+                }
+                "openOverlaySettings" -> {
+                    val intent = Intent(
+                        Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                        Uri.parse("package:$packageName")
+                    )
+                    startActivity(intent)
+                    result.success(true)
+                }
+                "isAccessibilityServiceEnabled" -> {
+                    val serviceName = "$packageName/.FocusAccessibilityService"
+                    val enabledServices = try {
+                        val enabled = Settings.Secure.getString(
+                            contentResolver,
+                            Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+                        )
+                        enabled?.split(":") ?: emptyList()
+                    } catch (e: Exception) {
+                        emptyList()
+                    }
+                    result.success(enabledServices.any { it.endsWith(".FocusAccessibilityService") })
+                }
+                "openAccessibilitySettings" -> {
+                    val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+                    startActivity(intent)
+                    result.success(true)
+                }
+                else -> result.notImplemented()
+            }
+        }
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {
                 "startLock" -> {
