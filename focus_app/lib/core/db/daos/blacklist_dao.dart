@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart';
 import '../database.dart';
 
 class BlacklistDao {
@@ -10,6 +11,7 @@ class BlacklistDao {
   Future<void> add(String packageName) =>
       _db.into(_db.blacklistEntry).insert(
         BlacklistEntryCompanion.insert(packageName: packageName),
+        mode: InsertMode.insertOrIgnore,
       );
 
   Future<void> remove(String packageName) =>
