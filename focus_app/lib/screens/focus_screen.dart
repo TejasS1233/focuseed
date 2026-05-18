@@ -10,7 +10,24 @@ class FocusScreen extends ConsumerStatefulWidget {
   ConsumerState<FocusScreen> createState() => _FocusScreenState();
 }
 
-class _FocusScreenState extends ConsumerState<FocusScreen> {
+class _FocusScreenState extends ConsumerState<FocusScreen> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    ref.read(sessionProvider.notifier).onAppLifecycleChange(state);
+  }
+
   @override
   Widget build(BuildContext context) {
     final session = ref.watch(sessionProvider);

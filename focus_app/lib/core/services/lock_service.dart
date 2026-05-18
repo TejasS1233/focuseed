@@ -31,8 +31,8 @@ class LockService {
   static Future<List<Map<String, String>>> getInstalledApps() async {
     try {
       final result = await _appChannel.invokeMethod('getInstalledApps');
-      return List<Map<String, dynamic>>.from(result as List)
-          .map((m) => Map<String, String>.from(m as Map))
+      return (result as List)
+          .map((e) => Map<String, String>.from(e as Map))
           .toList();
     } on MissingPluginException {
       return [];

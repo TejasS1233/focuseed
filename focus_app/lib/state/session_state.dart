@@ -1,7 +1,12 @@
 import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/services/lock_service.dart';
 import '../core/services/audio_service.dart';
+import '../core/db/database.dart';
+import '../core/db/daos/session_dao.dart';
+import 'app_state.dart';
+
 enum SessionStatus { idle, running, paused, completed, abandoned }
 
 class SessionState {
@@ -12,6 +17,7 @@ class SessionState {
   final String mode;
   final String? intention;
   final String? ambientSound;
+  final String? userId;
 
   SessionState({
     this.sessionId,
@@ -21,6 +27,7 @@ class SessionState {
     this.mode = 'soft',
     this.intention,
     this.ambientSound,
+    this.userId,
   });
 
   SessionState copyWith({
@@ -31,6 +38,7 @@ class SessionState {
     String? mode,
     String? intention,
     String? ambientSound,
+    String? userId,
   }) {
     return SessionState(
       sessionId: sessionId ?? this.sessionId,
@@ -40,6 +48,7 @@ class SessionState {
       mode: mode ?? this.mode,
       intention: intention ?? this.intention,
       ambientSound: ambientSound ?? this.ambientSound,
+      userId: userId ?? this.userId,
     );
   }
 }
@@ -51,18 +60,23 @@ class SessionNotifier extends Notifier<SessionState> {
   @override
   SessionState build() => SessionState();
 
-  void startSession({
+  String _generateId() => DateTime.now().microsecondsSinceEpoch.toString();
+
+  Future<void> startSession({
     required String mode,
     required int durationMinutes,
     String? intention,
     String? ambientSound,
-  }) {
+  }) async {
+    final userId = ref.read(userProvider);
     state = SessionState(
+      sessionId: _generateId(),
       status: SessionStatus.running,
       mode: mode,
       setDurationSeconds: durationMinutes * 60,
       intention: intention,
       ambientSound: ambientSound,
+      userId: userId,
     );
     _startSeconds = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
@@ -70,7 +84,7 @@ class SessionNotifier extends Notifier<SessionState> {
       state = state.copyWith(elapsedSeconds: now - _startSeconds);
     });
 
-    LockService().startLock(
+    await LockService().startLock(
       durationMinutes: durationMinutes,
       hardLock: mode == 'hard',
     );
@@ -102,9 +116,32 @@ class SessionNotifier extends Notifier<SessionState> {
       await LockService().stopLock();
     }
     AudioService().stop();
+
+    _persistSession(completed);
     state = state.copyWith(
       status: completed ? SessionStatus.completed : SessionStatus.abandoned,
     );
+  }
+
+  Future<void> _persistSession(bool completed) async {
+    final userId = ref.read(userProvider);
+    final sessionId = state.sessionId;
+    if (userId == null || sessionId == null) return;
+
+    final dao = SessionDao(ref.read(databaseProvider));
+    final now = DateTime.now();
+    await dao.insertSession(Session(
+      id: sessionId,
+      userId: userId,
+      mode: state.mode,
+      startTime: now.subtract(Duration(seconds: state.elapsedSeconds)),
+      endTime: now,
+      durationSeconds: state.elapsedSeconds,
+      intention: state.intention,
+      ambientSound: state.ambientSound,
+      outcome: completed ? 'completed' : 'abandoned',
+      roomId: null,
+    ));
   }
 
   Future<void> startSessionWithBlacklist({
@@ -114,12 +151,15 @@ class SessionNotifier extends Notifier<SessionState> {
     String? ambientSound,
     List<String> blacklist = const [],
   }) async {
+    final userId = ref.read(userProvider);
     state = SessionState(
+      sessionId: _generateId(),
       status: SessionStatus.running,
       mode: mode,
       setDurationSeconds: durationMinutes * 60,
       intention: intention,
       ambientSound: ambientSound,
+      userId: userId,
     );
     _startSeconds = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
@@ -138,6 +178,12 @@ class SessionNotifier extends Notifier<SessionState> {
     }
   }
 
+  void onAppLifecycleChange(AppLifecycleState lifecycleState) {
+    if (state.status != SessionStatus.running) return;
+    if (lifecycleState == AppLifecycleState.paused && state.mode == 'hard') {
+      endSession(completed: false);
+    }
+  }
 }
 
 final sessionProvider = NotifierProvider<SessionNotifier, SessionState>(
