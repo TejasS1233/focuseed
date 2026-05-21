@@ -30,6 +30,9 @@ class Sessions extends Table {
   TextColumn get ambientSound => text().nullable()();
   TextColumn get outcome => text()();
   TextColumn get roomId => text().nullable()();
+  TextColumn get tag => text().nullable()();
+  IntColumn get focusScore => integer().nullable()();
+  IntColumn get breakDuration => integer().nullable()();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -45,6 +48,46 @@ class Trees extends Table {
   DateTimeColumn get plantedAt => dateTime()();
   DateTimeColumn get diedAt => dateTime().nullable()();
   DateTimeColumn get lastWateredAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+class Decorations extends Table {
+  TextColumn get id => text()();
+  TextColumn get userId => text()();
+  TextColumn get type => text()();
+  RealColumn get x => real()();
+  RealColumn get y => real()();
+  DateTimeColumn get placedAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+class Schedules extends Table {
+  TextColumn get id => text()();
+  TextColumn get userId => text()();
+  IntColumn get hour => integer()();
+  IntColumn get minute => integer()();
+  BoolColumn get enabled => boolean().withDefault(const Constant(true))();
+  TextColumn get tag => text().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+class Challenges extends Table {
+  TextColumn get id => text()();
+  TextColumn get userId => text()();
+  TextColumn get key => text()();
+  TextColumn get title => text()();
+  TextColumn get description => text()();
+  IntColumn get target => integer()();
+  IntColumn get progress => integer().withDefault(const Constant(0))();
+  TextColumn get period => text()();
+  DateTimeColumn get startedAt => dateTime()();
+  DateTimeColumn get completedAt => dateTime().nullable()();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -83,13 +126,13 @@ class BlacklistEntry extends Table {
 }
 
 @DriftDatabase(
-  tables: [Users, Sessions, Trees, Achievements, JournalEntries, BlacklistEntry],
+  tables: [Users, Sessions, Trees, Achievements, JournalEntries, BlacklistEntry, Decorations, Schedules, Challenges],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -100,6 +143,14 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 3) {
         await m.addColumn(users, users.dailyGoalMinutes);
+      }
+      if (from < 4) {
+        await m.addColumn(sessions, sessions.tag);
+        await m.addColumn(sessions, sessions.focusScore);
+        await m.addColumn(sessions, sessions.breakDuration);
+        await m.createTable(decorations);
+        await m.createTable(schedules);
+        await m.createTable(challenges);
       }
     },
   );

@@ -45,7 +45,7 @@ class StreakService {
   Future<List<Achievement>> checkAndUnlock(String userId) async {
     final unlocked = <Achievement>[];
     final sessions = await _sessionDao.getSessionsByUser(userId);
-    final totalSeconds = await _sessionDao.getTotalSecondsForUser(userId);
+    final totalSeconds = await _sessionDao.getTotalSeconds(userId);
     final streak = await calculateStreak(userId);
 
     final candidates = [

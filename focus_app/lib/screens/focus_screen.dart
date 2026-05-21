@@ -36,6 +36,17 @@ class _FocusScreenState extends ConsumerState<FocusScreen> with WidgetsBindingOb
     await Future.delayed(const Duration(milliseconds: 600));
     if (!mounted) return;
     await _ReflectionSheet.show(context, sessionId);
+    if (!mounted || !context.mounted) return;
+    _maybeShowBreakReminder();
+  }
+
+  void _maybeShowBreakReminder() {
+    final session = ref.read(sessionProvider);
+    if (session.breakDurationSeconds <= 0 || !context.mounted) return;
+    showDialog(
+      context: context,
+      builder: (_) => _BreakReminderDialog(breakSeconds: session.breakDurationSeconds),
+    );
   }
 
   @override
@@ -518,6 +529,95 @@ class _ReflectionSheetState extends State<_ReflectionSheet> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _BreakReminderDialog extends StatefulWidget {
+  final int breakSeconds;
+  const _BreakReminderDialog({required this.breakSeconds});
+
+  @override
+  State<_BreakReminderDialog> createState() => _BreakReminderDialogState();
+}
+
+class _BreakReminderDialogState extends State<_BreakReminderDialog> with SingleTickerProviderStateMixin {
+  late int _remaining;
+  late AnimationController _pulseController;
+
+  @override
+  void initState() {
+    super.initState();
+    _remaining = widget.breakSeconds;
+    _pulseController = AnimationController(vsync: this, duration: const Duration(milliseconds: 1200))
+      ..repeat(reverse: true);
+
+    _startCountdown();
+  }
+
+  void _startCountdown() {
+    Future.doWhile(() async {
+      await Future.delayed(const Duration(seconds: 1));
+      if (!mounted) return false;
+      setState(() => _remaining--);
+      return _remaining > 0 && mounted;
+    });
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final min = _remaining ~/ 60;
+    final sec = _remaining % 60;
+    return AlertDialog(
+      backgroundColor: context.surface,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.xl)),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AnimatedBuilder(animation: _pulseController, builder: (context, _) {
+            return Transform.scale(
+              scale: 0.85 + 0.15 * _pulseController.value,
+              child: Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: AppColors.secondary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(AppRadius.full),
+                ),
+                child: const Icon(Icons.self_improvement, size: 48, color: AppColors.secondary),
+              ),
+            );
+          }),
+          const SizedBox(height: 20),
+          Text('Break Time', style: AppTypography.display2),
+          const SizedBox(height: 8),
+          Text('Take a breather', style: AppTypography.body.copyWith(color: context.textMuted)),
+          const SizedBox(height: 20),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            decoration: BoxDecoration(
+              color: AppColors.secondary.withOpacity(0.08),
+              borderRadius: BorderRadius.circular(AppRadius.lg),
+            ),
+            child: Text('${min.toString().padLeft(2, '0')}:${sec.toString().padLeft(2, '0')}',
+              style: AppTypography.timer.copyWith(fontSize: 32, color: AppColors.secondary)),
+          ),
+          const SizedBox(height: 24),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () => Navigator.pop(context),
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.secondary),
+              child: const Text('Done'),
+            ),
+          ),
+        ],
       ),
     );
   }

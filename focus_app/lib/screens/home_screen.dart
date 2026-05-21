@@ -18,24 +18,31 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   int _dailyGoalMinutes = 60;
   int _todayMinutes = 0;
+  int _streak = 0;
+  int _focusScore = 0;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadDailyGoal();
+      _loadData();
     });
   }
 
-  Future<void> _loadDailyGoal() async {
+  Future<void> _loadData() async {
     final userId = ref.read(userProvider);
     if (userId == null) return;
     final db = ref.read(databaseProvider);
+    final dao = SessionDao(db);
     final goal = await db.getDailyGoal(userId);
-    final todaySeconds = await SessionDao(db).getTodaySeconds(userId);
+    final todaySeconds = await dao.getTodaySeconds(userId);
+    final streak = await dao.getCurrentStreak(userId);
+    final score = await dao.getFocusScore(userId);
     setState(() {
       _dailyGoalMinutes = goal;
       _todayMinutes = todaySeconds ~/ 60;
+      _streak = streak;
+      _focusScore = score;
     });
   }
 
@@ -56,20 +63,38 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           style: AppTypography.display2.copyWith(fontSize: 24),
         ),
         actions: [
+          if (_focusScore > 0)
+            Container(
+              margin: const EdgeInsets.only(right: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(AppRadius.full),
+                border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.auto_awesome, size: 14, color: AppColors.primary),
+                  const SizedBox(width: 4),
+                  Text('$_focusScore', style: AppTypography.label.copyWith(color: AppColors.primary)),
+                ],
+              ),
+            ),
           Container(
             margin: const EdgeInsets.only(right: 8),
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.1),
+              color: AppColors.secondary.withOpacity(0.1),
               borderRadius: BorderRadius.circular(AppRadius.full),
-              border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+              border: Border.all(color: AppColors.secondary.withOpacity(0.2)),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 const Icon(Icons.local_fire_department, size: 14, color: AppColors.secondary),
                 const SizedBox(width: 4),
-                Text('0', style: AppTypography.label.copyWith(color: AppColors.secondary)),
+                Text('$_streak', style: AppTypography.label.copyWith(color: AppColors.secondary)),
               ],
             ),
           ),
@@ -217,7 +242,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   Expanded(child: _StatCard(
                     icon: Icons.local_fire_department,
                     label: 'Streak',
-                    value: '0',
+                    value: '$_streak',
                     color: AppColors.warning,
                   )),
                 ],

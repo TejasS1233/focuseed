@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/db/database.dart';
 import '../core/db/daos/session_dao.dart';
 import '../core/db/daos/achievement_dao.dart';
+import '../core/db/daos/challenge_dao.dart';
 import '../core/services/widget_service.dart';
 import '../state/app_state.dart';
 import '../theme/theme.dart';
@@ -19,10 +20,12 @@ class ProfileScreen extends ConsumerStatefulWidget {
 
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   List<Achievement>? _achievements;
+  List<Challenge>? _activeChallenges;
   int _totalSeconds = 0;
   int _completedCount = 0;
   int _streak = 0;
   int _dailyGoalMinutes = 60;
+  int _focusScore = 0;
 
   @override
   void initState() {
@@ -37,6 +40,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final db = ref.read(databaseProvider);
     final sessionDao = SessionDao(db);
     final achievementDao = AchievementDao(db);
+    final challengeDao = ChallengeDao(db);
 
     final sessions = await sessionDao.getSessionsByUser(userId);
     final completed = sessions.where((s) => s.outcome == 'completed').toList();
@@ -48,8 +52,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
     db.getDailyGoal(userId).then((g) => setState(() => _dailyGoalMinutes = g));
     sessionDao.getCurrentStreak(userId).then((s) => setState(() => _streak = s));
+    sessionDao.getFocusScore(userId).then((s) => setState(() => _focusScore = s));
     achievementDao.getAchievementsByUser(userId)
         .then((a) => setState(() => _achievements = a));
+    challengeDao.getActive(userId)
+        .then((c) => setState(() => _activeChallenges = c));
   }
 
   Future<void> _setGoal(int minutes) async {
@@ -215,6 +222,91 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ],
               ),
             ),
+            if (_focusScore > 0) ...[
+              const SizedBox(height: 28),
+              Text('Focus Score', style: AppTypography.heading1),
+              const SizedBox(height: 12),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: context.surfaceElevated.withOpacity(0.25),
+                  borderRadius: BorderRadius.circular(AppRadius.lg),
+                  border: Border.all(color: AppColors.primary.withOpacity(0.2), width: 0.5),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 56, height: 56,
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(AppRadius.md),
+                      ),
+                      child: Center(
+                        child: Text('$_focusScore', style: AppTypography.display1.copyWith(
+                          fontSize: 28, color: AppColors.primary)),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Overall Score', style: AppTypography.heading3),
+                          const SizedBox(height: 2),
+                          Text('Based on completion rate, streak & total focus time',
+                            style: AppTypography.caption.copyWith(color: context.textMuted)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+            if (_activeChallenges != null && _activeChallenges!.isNotEmpty) ...[
+              const SizedBox(height: 28),
+              Text('Active Challenges (${_activeChallenges!.length})', style: AppTypography.heading1),
+              const SizedBox(height: 12),
+              ..._activeChallenges!.map((c) {
+                final progress = c.target > 0 ? c.progress / c.target : 0.0;
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: context.surfaceElevated.withOpacity(0.25),
+                    borderRadius: BorderRadius.circular(AppRadius.lg),
+                    border: Border.all(color: context.border, width: 0.5),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(c.title, style: AppTypography.heading3.copyWith(color: AppColors.secondary)),
+                          ),
+                          Text('${c.progress}/${c.target}', style: AppTypography.caption.copyWith(color: context.textMuted)),
+                        ],
+                      ),
+                      if (c.description.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Text(c.description, style: AppTypography.caption.copyWith(color: context.textMuted)),
+                      ],
+                      const SizedBox(height: 10),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(3),
+                        child: LinearProgressIndicator(
+                          value: progress.clamp(0, 1),
+                          backgroundColor: context.surfaceHighlight,
+                          color: AppColors.secondary,
+                          minHeight: 6,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }),
+            ],
             const SizedBox(height: 28),
             Text('Achievements (${_achievements?.length ?? 0}/9)', style: AppTypography.heading1),
             const SizedBox(height: 12),

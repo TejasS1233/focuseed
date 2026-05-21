@@ -18,6 +18,8 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
   int _streak = 0;
   Map<String, int>? _dailyTotals;
   List<Session>? _recent;
+  List<String> _availableTags = [];
+  String? _selectedTag;
 
   @override
   void initState() {
@@ -30,18 +32,39 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
     if (userId == null) return;
     final dao = SessionDao(ref.read(databaseProvider));
 
-    final sessions = await dao.getSessionsByUser(userId);
-    final completed = sessions.where((s) => s.outcome == 'completed').toList();
-
-    setState(() {
-      _totalSeconds = sessions.fold<int>(0, (s, e) => s + e.durationSeconds);
-      _totalSessions = completed.length;
-    });
+    if (_selectedTag != null) {
+      final tagged = await dao.getSessionsByTag(userId, _selectedTag!);
+      final completed = tagged.where((s) => s.outcome == 'completed').toList();
+      setState(() {
+        _totalSeconds = tagged.fold<int>(0, (s, e) => s + e.durationSeconds);
+        _totalSessions = completed.length;
+        _recent = tagged.take(10).toList();
+      });
+      final range = DateTime.now().subtract(const Duration(days: 30));
+      dao.getDailyTotals(userId, range, DateTime.now()).then((d) => _parseDailyTotals(d));
+    } else {
+      final sessions = await dao.getSessionsByUser(userId);
+      final completed = sessions.where((s) => s.outcome == 'completed').toList();
+      setState(() {
+        _totalSeconds = sessions.fold<int>(0, (s, e) => s + e.durationSeconds);
+        _totalSessions = completed.length;
+      });
+      dao.getSessionsInRange(userId, DateTime.now().subtract(const Duration(days: 30)), DateTime.now())
+          .then((r) => setState(() => _recent = r.take(10).toList()));
+    }
 
     dao.getCurrentStreak(userId).then((s) => setState(() => _streak = s));
-    dao.getDailyTotals(userId, 7).then((d) => setState(() => _dailyTotals = d));
-    dao.getSessionsInRange(userId, DateTime.now().subtract(const Duration(days: 30)), DateTime.now())
-        .then((r) => setState(() => _recent = r.take(10).toList()));
+    dao.getDistinctTags(userId).then((t) => setState(() => _availableTags = t));
+    dao.getDailyTotals(userId, DateTime.now().subtract(const Duration(days: 7)), DateTime.now())
+        .then((d) => _parseDailyTotals(d));
+  }
+
+  void _parseDailyTotals(List<Map<String, dynamic>> raw) {
+    final map = <String, int>{};
+    for (final r in raw) {
+      map[r['day'] as String] = r['total'] as int;
+    }
+    setState(() => _dailyTotals = map);
   }
 
   @override
@@ -55,6 +78,35 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 100),
           children: [
+            if (_availableTags.isNotEmpty) ...[
+              Wrap(
+                spacing: 6, runSpacing: 6,
+                children: [null, ..._availableTags].map((t) => GestureDetector(
+                  onTap: () {
+                    setState(() => _selectedTag = t);
+                    _load();
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: _selectedTag == t
+                          ? AppColors.primary.withOpacity(0.15)
+                          : context.surfaceElevated.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(AppRadius.full),
+                      border: Border.all(
+                        color: _selectedTag == t ? AppColors.primary.withOpacity(0.4) : context.border,
+                        width: 0.5,
+                      ),
+                    ),
+                    child: Text(t ?? 'All', style: AppTypography.label.copyWith(
+                      color: _selectedTag == t ? AppColors.primary : context.textMuted,
+                      fontSize: 11,
+                    )),
+                  ),
+                )).toList(),
+              ),
+              const SizedBox(height: 16),
+            ],
             _StatGrid(totalSeconds: _totalSeconds, totalSessions: _totalSessions, streak: _streak),
             const SizedBox(height: 28),
             if (_dailyTotals != null) ...[

@@ -3,4 +3,4 @@ targets:
     builders:
       drift_dev:
         generate_for:
-          - lib/core/db/database.dart
+          - lib/core/db/**.dart

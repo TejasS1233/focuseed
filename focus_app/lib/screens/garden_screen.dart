@@ -4,6 +4,8 @@ import '../state/app_state.dart';
 import '../widgets/shimmer.dart';
 import '../widgets/tree_painter.dart';
 import '../state/garden_state.dart';
+import '../core/db/database.dart' as db;
+import '../core/db/daos/decoration_dao.dart';
 import '../theme/theme.dart';
 
 class GardenScreen extends ConsumerStatefulWidget {
@@ -14,6 +16,37 @@ class GardenScreen extends ConsumerStatefulWidget {
 }
 
 class _GardenScreenState extends ConsumerState<GardenScreen> {
+  List<db.Decoration> _decorations = [];
+  bool _showDecorations = true;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadDecorations());
+  }
+
+  Future<void> _loadDecorations() async {
+    final userId = ref.read(userProvider);
+    if (userId == null) return;
+    final dao = DecorationDao(ref.read(databaseProvider));
+    final decos = await dao.getByUser(userId);
+    if (mounted) setState(() => _decorations = decos);
+  }
+
+  static const _decorationIcons = {
+    'stone': Icons.brightness_1,
+    'flower': Icons.local_florist,
+    'grass': Icons.grass,
+    'mushroom': Icons.eco,
+  };
+
+  static const _decorationColors = {
+    'stone': Color(0xFF8E8E93),
+    'flower': Color(0xFFFF6B9D),
+    'grass': Color(0xFF4CAF50),
+    'mushroom': Color(0xFFFF9800),
+  };
+
   @override
   Widget build(BuildContext context) {
     final garden = ref.watch(gardenProvider);
@@ -21,6 +54,21 @@ class _GardenScreenState extends ConsumerState<GardenScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('My Garden', style: AppTypography.display2.copyWith(fontSize: 24)),
+        actions: [
+          Container(
+            margin: const EdgeInsets.only(right: 12),
+            decoration: BoxDecoration(
+              color: context.surfaceElevated.withOpacity(0.3),
+              borderRadius: BorderRadius.circular(AppRadius.full),
+              border: Border.all(color: context.border, width: 0.5),
+            ),
+            child: IconButton(
+              icon: Icon(_showDecorations ? Icons.visibility : Icons.visibility_off, size: 18),
+              color: _showDecorations ? AppColors.primary : context.textMuted,
+              onPressed: () => setState(() => _showDecorations = !_showDecorations),
+            ),
+          ),
+        ],
       ),
       body: garden.isLoading
           ? Padding(
@@ -72,21 +120,35 @@ class _GardenScreenState extends ConsumerState<GardenScreen> {
                   },
                   color: AppColors.primary,
                   backgroundColor: context.surfaceElevated,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
-                    child: GridView.builder(
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        crossAxisSpacing: 12,
-                        mainAxisSpacing: 12,
-                        childAspectRatio: 0.85,
+                  child: Stack(
+                    children: [
+                      if (_showDecorations && _decorations.isNotEmpty)
+                        ...List.generate(_decorations.length, (i) {
+                          final d = _decorations[i];
+                          return Positioned(
+                            left: d.x * 100,
+                            top: d.y * 300,
+                            child: Icon(
+                              _decorationIcons[d.type] ?? Icons.circle,
+                              size: d.type == 'stone' ? 12 : 20,
+                              color: (_decorationColors[d.type] ?? AppColors.primary).withOpacity(0.6),
+                            ),
+                          );
+                        }),
+                      GridView.builder(
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 12,
+                          mainAxisSpacing: 12,
+                          childAspectRatio: 0.85,
+                        ),
+                        itemCount: garden.trees.length,
+                        itemBuilder: (_, i) => _GardenTreeTile(
+                          tree: garden.trees[i],
+                          index: i,
+                        ),
                       ),
-                      itemCount: garden.trees.length,
-                      itemBuilder: (_, i) => _GardenTreeTile(
-                        tree: garden.trees[i],
-                        index: i,
-                      ),
-                    ),
+                    ],
                   ),
                 ),
     );

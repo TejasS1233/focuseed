@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../core/db/database.dart';
-import '../core/db/daos/session_dao.dart';
 import '../core/db/daos/journal_dao.dart';
 import '../state/app_state.dart';
 import '../theme/theme.dart';
@@ -290,8 +289,8 @@ class _JournalEntryCard extends ConsumerWidget {
 }
 
 final _sessionForEntryProvider = FutureProvider.family<Session?, String>((ref, sessionId) {
-  final dao = SessionDao(ref.read(databaseProvider));
-  return dao.getSession(sessionId);
+  final db = ref.read(databaseProvider);
+  return db.getSessionById(sessionId);
 });
 
 class _RatingStars extends StatelessWidget {

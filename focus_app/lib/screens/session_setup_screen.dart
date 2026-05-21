@@ -25,6 +25,17 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
   bool _mixerExpanded = false;
   late Map<String, double> _mixConfig;
 
+  String? _selectedTag;
+  int _breakMinutes = 0;
+
+  static const _tags = ['Work', 'Study', 'Creative', 'Reading', 'Exercise', 'Deep Work'];
+  static const _intervals = [
+    ('Pomodoro', 25, 5),
+    ('Focus 50/10', 50, 10),
+    ('Custom', null, null),
+  ];
+  bool _customInterval = false;
+
   @override
   void initState() {
     super.initState();
@@ -53,6 +64,14 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
     await _previewMixer.setVolume(key, volume);
   }
 
+  void _applyInterval(int focusMin, int breakMin) {
+    setState(() {
+      _customInterval = false;
+      _durationMinutes = focusMin;
+      _breakMinutes = breakMin;
+    });
+  }
+
   Future<void> _start() async {
     HapticFeedback.mediumImpact();
     _previewMixer.stopAll();
@@ -75,6 +94,8 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
       intention: _intention,
       mixConfig: mix,
       blacklist: _mode == 'hard' ? blacklisted : [],
+      tag: _selectedTag,
+      breakDurationSeconds: _breakMinutes * 60,
     );
 
     if (!context.mounted) return;
@@ -131,31 +152,114 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
               ),
             ),
             const SizedBox(height: 28),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('Duration', style: AppTypography.heading2),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            Text('Tag', style: AppTypography.heading2),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8, runSpacing: 8,
+              children: [null, ..._tags].map((t) => GestureDetector(
+                onTap: () => setState(() => _selectedTag = t),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                   decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.1),
+                    color: _selectedTag == t
+                        ? AppColors.primary.withOpacity(0.15)
+                        : context.surfaceElevated.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(AppRadius.full),
-                    border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+                    border: Border.all(
+                      color: _selectedTag == t
+                          ? AppColors.primary.withOpacity(0.4)
+                          : context.border,
+                      width: 0.5,
+                    ),
                   ),
-                  child: Text('$_durationMinutes min',
-                    style: AppTypography.label.copyWith(color: AppColors.primary)),
+                  child: Text(t ?? 'Any', style: AppTypography.label.copyWith(
+                    color: _selectedTag == t ? AppColors.primary : context.textMuted,
+                  )),
                 ),
-              ],
+              )).toList(),
             ),
-            const SizedBox(height: 8),
-            Slider(
-              value: _durationMinutes.toDouble(),
-              min: 5,
-              max: 120,
-              divisions: 23,
-              label: '$_durationMinutes min',
-              onChanged: (v) => setState(() => _durationMinutes = v.round()),
+            const SizedBox(height: 28),
+            Text('Timer Interval', style: AppTypography.heading2),
+            const SizedBox(height: 10),
+            Row(
+              children: _intervals.map((entry) {
+                final label = entry.$1;
+                final isActive = !_customInterval && _durationMinutes == entry.$2;
+                return Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      left: entry == _intervals.first ? 0 : 4,
+                      right: entry == _intervals.last ? 0 : 4,
+                    ),
+                    child: GestureDetector(
+                      onTap: entry.$2 != null
+                          ? () => _applyInterval(entry.$2!, entry.$3!)
+                          : () => setState(() => _customInterval = true),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        decoration: BoxDecoration(
+                          color: isActive
+                              ? AppColors.primary.withOpacity(0.1)
+                              : context.surfaceElevated.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(AppRadius.md),
+                          border: Border.all(
+                            color: isActive ? AppColors.primary.withOpacity(0.4) : context.border,
+                            width: 0.5,
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            Text(label, style: AppTypography.caption.copyWith(
+                              color: isActive ? AppColors.primary : context.textPrimary,
+                              fontWeight: FontWeight.w600,
+                            )),
+                            if (entry.$2 != null) ...[
+                              const SizedBox(height: 2),
+                              Text('${entry.$2}/${entry.$3}', style: AppTypography.caption.copyWith(
+                                color: context.textMuted, fontSize: 11)),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
             ),
+            if (_customInterval) ...[
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Focus: ${_durationMinutes}m', style: AppTypography.caption.copyWith(color: context.textMuted)),
+                        Slider(
+                          value: _durationMinutes.toDouble(),
+                          min: 5, max: 120, divisions: 23,
+                          onChanged: (v) => setState(() => _durationMinutes = v.round()),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Break: ${_breakMinutes}m', style: AppTypography.caption.copyWith(color: context.textMuted)),
+                        Slider(
+                          value: _breakMinutes.toDouble(),
+                          min: 0, max: 30, divisions: 6,
+                          onChanged: (v) => setState(() => _breakMinutes = v.round()),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
             const SizedBox(height: 28),
             GestureDetector(
               onTap: () => setState(() => _mixerExpanded = !_mixerExpanded),
