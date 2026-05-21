@@ -41,7 +41,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
         _recent = tagged.take(10).toList();
       });
       final range = DateTime.now().subtract(const Duration(days: 30));
-      dao.getDailyTotals(userId, range, DateTime.now()).then((d) => _parseDailyTotals(d));
+      dao.getDailyTotals(userId, range, DateTime.now()).then((d) { if (mounted) _parseDailyTotals(d); });
     } else {
       final sessions = await dao.getSessionsByUser(userId);
       final completed = sessions.where((s) => s.outcome == 'completed').toList();
@@ -50,13 +50,13 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
         _totalSessions = completed.length;
       });
       dao.getSessionsInRange(userId, DateTime.now().subtract(const Duration(days: 30)), DateTime.now())
-          .then((r) => setState(() => _recent = r.take(10).toList()));
+          .then((r) { if (mounted) setState(() => _recent = r.take(10).toList()); });
     }
 
-    dao.getCurrentStreak(userId).then((s) => setState(() => _streak = s));
-    dao.getDistinctTags(userId).then((t) => setState(() => _availableTags = t));
+    dao.getCurrentStreak(userId).then((s) { if (mounted) setState(() => _streak = s); });
+    dao.getDistinctTags(userId).then((t) { if (mounted) setState(() => _availableTags = t); });
     dao.getDailyTotals(userId, DateTime.now().subtract(const Duration(days: 7)), DateTime.now())
-        .then((d) => _parseDailyTotals(d));
+        .then((d) { if (mounted) _parseDailyTotals(d); });
   }
 
   void _parseDailyTotals(List<Map<String, dynamic>> raw) {
@@ -64,7 +64,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
     for (final r in raw) {
       map[r['day'] as String] = r['total'] as int;
     }
-    setState(() => _dailyTotals = map);
+    if (mounted) setState(() => _dailyTotals = map);
   }
 
   @override
@@ -202,17 +202,32 @@ class _WeekChart extends StatelessWidget {
 
   const _WeekChart({required this.dailyTotals});
 
+  static const _dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+  String _dayName(String dateKey) {
+    try {
+      final parts = dateKey.split('-');
+      if (parts.length != 3) return '';
+      final dt = DateTime(int.parse(parts[0]), int.parse(parts[1]), int.parse(parts[2]));
+      return _dayLabels[dt.weekday - 1];
+    } catch (_) {
+      return '';
+    }
+  }
+
+  String _minutes(int seconds) => '${(seconds / 60).round()}m';
+
   @override
   Widget build(BuildContext context) {
     final entries = dailyTotals.entries.toList()
       ..sort((a, b) => a.key.compareTo(b.key));
-    if (entries.isEmpty) {
-      return SizedBox(
-        height: 180,
-        child: Center(child: Text('No data this week', style: AppTypography.body.copyWith(color: context.textMuted))),
-      );
-    }
-    final maxVal = entries.map((e) => e.value).reduce((a, b) => a > b ? a : b).toDouble();
+
+    final maxVal = entries.isEmpty
+        ? 0.0
+        : entries.map((e) => e.value).reduce((a, b) => a > b ? a : b).toDouble();
+
+    final isDark = context.isDark;
+    final barColor = isDark ? AppColors.primary : AppColors.primaryDark;
 
     return Container(
       height: 180,
@@ -222,79 +237,46 @@ class _WeekChart extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadius.lg),
         border: Border.all(color: context.border.withOpacity(0.3), width: 0.5),
       ),
-      child: CustomPaint(
-        size: Size.infinite,
-        painter: _BarChartPainter(entries: entries, maxVal: maxVal, isDark: context.isDark),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: entries.isEmpty
+            ? [Expanded(child: Center(child: Text('No data this week', style: AppTypography.body.copyWith(color: context.textMuted))))]
+            : entries.map((e) {
+                final pct = maxVal > 0 ? e.value / maxVal : 0.0;
+                return Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 3),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        if (e.value >= 60)
+                          Text(_minutes(e.value), style: TextStyle(
+                            color: isDark ? AppColors.textSecondary : AppColorsLight.textSecondary,
+                            fontSize: 8,
+                            fontFamily: AppTypography.bodyFont,
+                          )),
+                        const SizedBox(height: 2),
+                        Container(
+                          height: (140 * pct).clamp(4.0, 140.0),
+                          decoration: BoxDecoration(
+                            color: pct > 0 ? barColor : barColor.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(_dayName(e.key), style: TextStyle(
+                          color: isDark ? AppColors.textMuted : AppColorsLight.textMuted,
+                          fontSize: 9,
+                          fontFamily: AppTypography.bodyFont,
+                        )),
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(),
       ),
     );
   }
-}
-
-class _BarChartPainter extends CustomPainter {
-  final List<MapEntry<String, int>> entries;
-  final double maxVal;
-  final bool isDark;
-
-  _BarChartPainter({required this.entries, required this.maxVal, required this.isDark});
-
-  static const _dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-
-  String _dayName(String dateKey) {
-    final parts = dateKey.split('-');
-    if (parts.length != 3) return '';
-    final dt = DateTime(int.parse(parts[0]), int.parse(parts[1]), int.parse(parts[2]));
-    return _dayLabels[dt.weekday - 1];
-  }
-
-  String _minutes(int seconds) => '${(seconds / 60).round()}m';
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (entries.isEmpty) return;
-
-    final barWidth = (size.width - 20) / entries.length * 0.6;
-    final gap = (size.width - 20) / entries.length;
-    final paint = Paint()
-      ..style = PaintingStyle.fill
-      ..color = isDark ? AppColors.primary : AppColors.primaryDark;
-
-    final mutedPaint = Paint()
-      ..style = PaintingStyle.fill
-      ..color = (isDark ? AppColors.primary : AppColors.primaryDark).withOpacity(0.15);
-
-    final textStyle = TextStyle(
-      color: isDark ? AppColors.textMuted : AppColorsLight.textMuted,
-      fontSize: 9,
-      fontFamily: AppTypography.bodyFont,
-    );
-
-    for (int i = 0; i < entries.length; i++) {
-      final x = 10 + i * gap + (gap - barWidth) / 2;
-      final barH = maxVal > 0 ? (entries[i].value / maxVal) * (size.height - 40) : 0.0;
-      final barTop = size.height - 20 - barH;
-
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(Rect.fromLTWH(x, barTop, barWidth, barH), const Radius.circular(3)),
-        barH > 0 ? paint : mutedPaint,
-      );
-
-      final label = _dayName(entries[i].key);
-      final tp = TextPainter(text: TextSpan(text: label, style: textStyle), textDirection: TextDirection.ltr)
-        ..layout();
-      tp.paint(canvas, Offset(x + (barWidth - tp.width) / 2, size.height - 16));
-
-      if (barH > 0 && entries[i].value >= 60) {
-        final valTp = TextPainter(
-          text: TextSpan(text: _minutes(entries[i].value), style: textStyle.copyWith(fontSize: 8, color: isDark ? AppColors.textSecondary : AppColorsLight.textSecondary)),
-          textDirection: TextDirection.ltr,
-        )..layout();
-        valTp.paint(canvas, Offset(x + (barWidth - valTp.width) / 2, barTop - 14));
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _BarChartPainter old) => old.entries != entries;
 }
 
 class _SessionRow extends StatelessWidget {

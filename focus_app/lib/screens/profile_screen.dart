@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/db/database.dart';
@@ -396,9 +397,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     ),
                     onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const BlacklistScreen())),
                   ),
-                  if (bool.fromEnvironment('DEBUG', defaultValue: false))
+                  if (kDebugMode)
                     const Divider(height: 1, indent: 60, color: AppColorsLight.border),
-                  if (bool.fromEnvironment('DEBUG', defaultValue: false))
+                  if (kDebugMode)
                     ListTile(
                       leading: Container(
                         padding: const EdgeInsets.all(8),

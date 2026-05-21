@@ -120,35 +120,43 @@ class _GardenScreenState extends ConsumerState<GardenScreen> {
                   },
                   color: AppColors.primary,
                   backgroundColor: context.surfaceElevated,
-                  child: Stack(
-                    children: [
-                      if (_showDecorations && _decorations.isNotEmpty)
-                        ...List.generate(_decorations.length, (i) {
-                          final d = _decorations[i];
-                          return Positioned(
-                            left: d.x * 100,
-                            top: d.y * 300,
-                            child: Icon(
-                              _decorationIcons[d.type] ?? Icons.circle,
-                              size: d.type == 'stone' ? 12 : 20,
-                              color: (_decorationColors[d.type] ?? AppColors.primary).withOpacity(0.6),
-                            ),
-                          );
-                        }),
-                      GridView.builder(
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 12,
-                          childAspectRatio: 0.85,
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 100),
+                    child: Stack(
+                      children: [
+                        GridView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            crossAxisSpacing: 12,
+                            mainAxisSpacing: 12,
+                            childAspectRatio: 0.85,
+                          ),
+                          itemCount: garden.trees.length,
+                          itemBuilder: (_, i) => _GardenTreeTile(
+                            tree: garden.trees[i],
+                            index: i,
+                          ),
                         ),
-                        itemCount: garden.trees.length,
-                        itemBuilder: (_, i) => _GardenTreeTile(
-                          tree: garden.trees[i],
-                          index: i,
-                        ),
-                      ),
-                    ],
+                        if (_showDecorations && _decorations.isNotEmpty)
+                          ...List.generate(_decorations.length, (i) {
+                            final d = _decorations[i];
+                            return Positioned(
+                              left: d.x * (MediaQuery.of(context).size.width - 40),
+                              top: d.y * 200,
+                              child: IgnorePointer(
+                                child: Icon(
+                                  _decorationIcons[d.type] ?? Icons.circle,
+                                  size: d.type == 'stone' ? 12 : 20,
+                                  color: (_decorationColors[d.type] ?? AppColors.primary).withOpacity(0.6),
+                                ),
+                              ),
+                            );
+                          }),
+                      ],
+                    ),
                   ),
                 ),
     );
