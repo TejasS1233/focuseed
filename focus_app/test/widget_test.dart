@@ -5,6 +5,6 @@ import 'package:focus_app/main.dart';
 void main() {
   testWidgets('App renders without crashing', (WidgetTester tester) async {
     await tester.pumpWidget(const ProviderScope(child: FocusGardenApp()));
-    expect(find.text('Focus Garden'), findsOneWidget);
+    expect(find.text('Focuseed'), findsOneWidget);
   });
 }

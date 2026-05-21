@@ -35,14 +35,13 @@ class FocusWidgetProvider : AppWidgetProvider() {
 
             val views = RemoteViews(context.packageName, R.layout.focus_widget)
             views.setTextViewText(R.id.widget_streak, "$streak")
-            views.setTextViewText(R.id.widget_streak_label,
-                if (streak == 1) "DAY STREAK" else "DAY STREAK")
-            views.setTextViewText(R.id.widget_today, "$todayMinutes MIN TODAY")
+            views.setTextViewText(R.id.widget_streak_label, "DAY STREAK")
+            views.setTextViewText(R.id.widget_today, "$todayMinutes")
+            views.setTextViewText(R.id.widget_today_label, "MIN TODAY")
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                views.setFloat(R.id.widget_title, "setLetterSpacing", 0.18f)
-                views.setFloat(R.id.widget_streak, "setLetterSpacing", 0.03f)
-                views.setFloat(R.id.widget_button, "setLetterSpacing", 0.12f)
+                views.setFloat(R.id.widget_title, "setLetterSpacing", 0.16f)
+                views.setFloat(R.id.widget_button, "setLetterSpacing", 0.14f)
             }
 
             val intent = Intent(context, MainActivity::class.java)

@@ -21,7 +21,7 @@ class FocusGardenApp extends ConsumerWidget {
     final isDark = ref.watch(themeModeProvider);
 
     return MaterialApp(
-      title: 'Focus Garden',
+      title: 'Focuseed',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,

@@ -62,7 +62,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 ),
                 const SizedBox(height: 32),
                 // Title
-                Text('Focus Garden', style: AppTypography.display1),
+                Text('Focuseed', style: AppTypography.display1),
                 const SizedBox(height: 12),
                 Text(
                   'Grow your focus, one session at a time.',

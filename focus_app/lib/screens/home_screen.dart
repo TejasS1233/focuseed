@@ -52,7 +52,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          user != null ? 'Hey, $user' : 'Focus Garden',
+          user != null ? 'Hey, $user' : 'Focuseed',
           style: AppTypography.display2.copyWith(fontSize: 24),
         ),
         actions: [

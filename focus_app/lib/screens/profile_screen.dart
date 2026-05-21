@@ -122,7 +122,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(user ?? 'Focus Gardener', style: AppTypography.heading1),
+                        Text(user ?? 'Gardener', style: AppTypography.heading1),
                         const SizedBox(height: 4),
                         Row(
                           children: [
