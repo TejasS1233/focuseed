@@ -1,5 +1,7 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../core/db/daos/session_dao.dart';
 import '../state/app_state.dart';
 import '../state/session_state.dart';
 import '../state/garden_state.dart';
@@ -14,11 +16,26 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
+  int _dailyGoalMinutes = 60;
+  int _todayMinutes = 0;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      setState(() {});
+      _loadDailyGoal();
+    });
+  }
+
+  Future<void> _loadDailyGoal() async {
+    final userId = ref.read(userProvider);
+    if (userId == null) return;
+    final db = ref.read(databaseProvider);
+    final goal = await db.getDailyGoal(userId);
+    final todaySeconds = await SessionDao(db).getTodaySeconds(userId);
+    setState(() {
+      _dailyGoalMinutes = goal;
+      _todayMinutes = todaySeconds ~/ 60;
     });
   }
 
@@ -124,20 +141,65 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             const SizedBox(height: 24),
             _AnimatedEntry(
               delay: 1,
-              child: Text('Today\'s Stats', style: AppTypography.heading1),
+              child: Text('Today\'s Progress', style: AppTypography.heading1),
+            ),
+            const SizedBox(height: 12),
+            _AnimatedEntry(
+              delay: 1,
+              child: Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: context.surfaceElevated.withOpacity(0.25),
+                  borderRadius: BorderRadius.circular(AppRadius.lg),
+                  border: Border.all(color: context.border.withOpacity(0.3), width: 0.5),
+                ),
+                child: Row(
+                  children: [
+                    SizedBox(
+                      width: 72, height: 72,
+                      child: CustomPaint(
+                        painter: _ProgressRingPainter(
+                          progress: _dailyGoalMinutes > 0 ? _todayMinutes / _dailyGoalMinutes : 0,
+                          isDark: context.isDark,
+                        ),
+                        child: Center(
+                          child: Text('${_todayMinutes}m', style: AppTypography.caption.copyWith(
+                            color: context.textPrimary, fontSize: 12, fontWeight: FontWeight.w700,
+                          )),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Daily Goal', style: AppTypography.heading3),
+                          const SizedBox(height: 2),
+                          Text('$_todayMinutes of $_dailyGoalMinutes minutes',
+                            style: AppTypography.bodySmall.copyWith(color: context.textMuted)),
+                          const SizedBox(height: 6),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(2),
+                            child: LinearProgressIndicator(
+                              value: _dailyGoalMinutes > 0 ? _todayMinutes / _dailyGoalMinutes : 0,
+                              backgroundColor: context.surfaceHighlight,
+                              color: AppColors.primary,
+                              minHeight: 4,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
             const SizedBox(height: 12),
             _AnimatedEntry(
               delay: 1,
               child: Row(
                 children: [
-                  Expanded(child: _StatCard(
-                    icon: Icons.timer_outlined,
-                    label: 'Focused',
-                    value: '${session.elapsedSeconds ~/ 60}m',
-                    color: AppColors.primary,
-                  )),
-                  const SizedBox(width: 10),
                   Expanded(child: _StatCard(
                     icon: Icons.eco_outlined,
                     label: 'Trees',
@@ -150,6 +212,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     label: 'Sessions',
                     value: '$completedSessions',
                     color: AppColors.secondary,
+                  )),
+                  const SizedBox(width: 10),
+                  Expanded(child: _StatCard(
+                    icon: Icons.local_fire_department,
+                    label: 'Streak',
+                    value: '0',
+                    color: AppColors.warning,
                   )),
                 ],
               ),
@@ -290,6 +359,44 @@ class _StatCard extends StatelessWidget {
       ),
     );
   }
+}
+
+class _ProgressRingPainter extends CustomPainter {
+  final double progress;
+  final bool isDark;
+
+  _ProgressRingPainter({required this.progress, required this.isDark});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2 - 6;
+    const strokeWidth = 6.0;
+
+    final bgPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round
+      ..color = (isDark ? AppColors.surfaceHighlight : AppColorsLight.surfaceHighlight).withOpacity(0.5);
+
+    canvas.drawCircle(center, radius, bgPaint);
+
+    final fgPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round
+      ..shader = SweepGradient(
+        startAngle: -pi / 2,
+        endAngle: 3 * pi / 2,
+        colors: [AppColors.primaryDark, AppColors.primary],
+        stops: const [0, 1],
+      ).createShader(Rect.fromCircle(center: center, radius: radius));
+
+    canvas.drawArc(Rect.fromCircle(center: center, radius: radius), -pi / 2, 2 * pi * progress.clamp(0, 1), false, fgPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _ProgressRingPainter old) => old.progress != progress;
 }
 
 class _GardenPreviewTile extends StatelessWidget {

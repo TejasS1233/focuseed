@@ -12,6 +12,7 @@ class Users extends Table {
   IntColumn get streakCount => integer().withDefault(const Constant(0))();
   IntColumn get longestStreak => integer().withDefault(const Constant(0))();
   IntColumn get totalFocusSeconds => integer().withDefault(const Constant(0))();
+  IntColumn get dailyGoalMinutes => integer().withDefault(const Constant(60))();
   DateTimeColumn get createdAt => dateTime()();
 
   @override
@@ -88,7 +89,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -97,11 +98,25 @@ class AppDatabase extends _$AppDatabase {
       if (from < 2) {
         await m.createTable(journalEntries);
       }
+      if (from < 3) {
+        await m.addColumn(users, users.dailyGoalMinutes);
+      }
     },
   );
 
   Future<Session?> getSessionById(String id) {
     return (select(sessions)..where((s) => s.id.equals(id))).getSingleOrNull();
+  }
+
+  Future<int> getDailyGoal(String userId) async {
+    final user = await (select(users)..where((u) => u.id.equals(userId))).getSingleOrNull();
+    return user?.dailyGoalMinutes ?? 60;
+  }
+
+  Future<void> setDailyGoal(String userId, int minutes) async {
+    await (update(users)..where((u) => u.id.equals(userId))).write(UsersCompanion(
+      dailyGoalMinutes: Value(minutes),
+    ));
   }
 }
 

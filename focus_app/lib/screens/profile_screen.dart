@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/db/database.dart';
 import '../core/db/daos/session_dao.dart';
 import '../core/db/daos/achievement_dao.dart';
+import '../core/services/widget_service.dart';
 import '../state/app_state.dart';
 import '../theme/theme.dart';
 import 'analytics_screen.dart';
@@ -21,6 +22,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   int _totalSeconds = 0;
   int _completedCount = 0;
   int _streak = 0;
+  int _dailyGoalMinutes = 60;
 
   @override
   void initState() {
@@ -44,9 +46,23 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       _completedCount = completed.length;
     });
 
+    db.getDailyGoal(userId).then((g) => setState(() => _dailyGoalMinutes = g));
     sessionDao.getCurrentStreak(userId).then((s) => setState(() => _streak = s));
     achievementDao.getAchievementsByUser(userId)
         .then((a) => setState(() => _achievements = a));
+  }
+
+  Future<void> _setGoal(int minutes) async {
+    final userId = ref.read(userProvider);
+    if (userId == null) return;
+    final db = ref.read(databaseProvider);
+    await db.setDailyGoal(userId, minutes);
+    setState(() => _dailyGoalMinutes = minutes);
+
+    final dao = SessionDao(db);
+    final streak = await dao.getCurrentStreak(userId);
+    final todaySeconds = await dao.getTodaySeconds(userId);
+    await WidgetService.updateWidget(streak: streak, todayMinutes: todaySeconds ~/ 60);
   }
 
   @override
@@ -138,6 +154,66 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 const SizedBox(width: 10),
                 Expanded(child: _StatsTile(icon: Icons.emoji_events_outlined, label: 'Best', value: '${_streak}d', color: AppColors.warning)),
               ],
+            ),
+            const SizedBox(height: 28),
+            Text('Daily Goal', style: AppTypography.heading1),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: context.surfaceElevated.withOpacity(0.25),
+                borderRadius: BorderRadius.circular(AppRadius.lg),
+                border: Border.all(color: context.border.withOpacity(0.3), width: 0.5),
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('$_dailyGoalMinutes min/day', style: AppTypography.heading2),
+                      Text('${_dailyGoalMinutes ~/ 60}h ${_dailyGoalMinutes % 60}m', style: AppTypography.bodySmall.copyWith(color: context.textMuted)),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  SliderTheme(
+                    data: SliderTheme.of(context).copyWith(
+                      activeTrackColor: AppColors.primary,
+                      inactiveTrackColor: context.surfaceHighlight,
+                      thumbColor: AppColors.primary,
+                      overlayColor: AppColors.primary.withOpacity(0.1),
+                      trackHeight: 4,
+                    ),
+                    child: Slider(
+                      value: _dailyGoalMinutes.toDouble(),
+                      min: 15,
+                      max: 240,
+                      divisions: 15,
+                      label: '$_dailyGoalMinutes min',
+                      onChanged: (v) => setState(() => _dailyGoalMinutes = v.round()),
+                      onChangeEnd: (v) => _setGoal(v.round()),
+                    ),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [15, 30, 60, 120].map((m) => GestureDetector(
+                      onTap: () => _setGoal(m),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: _dailyGoalMinutes == m ? AppColors.primary.withOpacity(0.15) : Colors.transparent,
+                          borderRadius: BorderRadius.circular(AppRadius.full),
+                          border: Border.all(
+                            color: _dailyGoalMinutes == m ? AppColors.primary.withOpacity(0.4) : context.border.withOpacity(0.3),
+                          ),
+                        ),
+                        child: Text('${m}m', style: AppTypography.caption.copyWith(
+                          color: _dailyGoalMinutes == m ? AppColors.primary : context.textMuted,
+                        )),
+                      ),
+                    )).toList(),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 28),
             Text('Achievements (${_achievements?.length ?? 0}/9)', style: AppTypography.heading1),

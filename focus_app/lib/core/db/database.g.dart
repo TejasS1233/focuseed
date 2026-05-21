@@ -43,6 +43,14 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
       type: DriftSqlType.int,
       requiredDuringInsert: false,
       defaultValue: const Constant(0));
+  static const VerificationMeta _dailyGoalMinutesMeta =
+      const VerificationMeta('dailyGoalMinutes');
+  @override
+  late final GeneratedColumn<int> dailyGoalMinutes = GeneratedColumn<int>(
+      'daily_goal_minutes', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(60));
   static const VerificationMeta _createdAtMeta =
       const VerificationMeta('createdAt');
   @override
@@ -56,6 +64,7 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
         streakCount,
         longestStreak,
         totalFocusSeconds,
+        dailyGoalMinutes,
         createdAt
       ];
   @override
@@ -97,6 +106,12 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
           totalFocusSeconds.isAcceptableOrUnknown(
               data['total_focus_seconds']!, _totalFocusSecondsMeta));
     }
+    if (data.containsKey('daily_goal_minutes')) {
+      context.handle(
+          _dailyGoalMinutesMeta,
+          dailyGoalMinutes.isAcceptableOrUnknown(
+              data['daily_goal_minutes']!, _dailyGoalMinutesMeta));
+    }
     if (data.containsKey('created_at')) {
       context.handle(_createdAtMeta,
           createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
@@ -122,6 +137,8 @@ class $UsersTable extends Users with TableInfo<$UsersTable, User> {
           .read(DriftSqlType.int, data['${effectivePrefix}longest_streak'])!,
       totalFocusSeconds: attachedDatabase.typeMapping.read(
           DriftSqlType.int, data['${effectivePrefix}total_focus_seconds'])!,
+      dailyGoalMinutes: attachedDatabase.typeMapping.read(
+          DriftSqlType.int, data['${effectivePrefix}daily_goal_minutes'])!,
       createdAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
     );
@@ -139,6 +156,7 @@ class User extends DataClass implements Insertable<User> {
   final int streakCount;
   final int longestStreak;
   final int totalFocusSeconds;
+  final int dailyGoalMinutes;
   final DateTime createdAt;
   const User(
       {required this.id,
@@ -146,6 +164,7 @@ class User extends DataClass implements Insertable<User> {
       required this.streakCount,
       required this.longestStreak,
       required this.totalFocusSeconds,
+      required this.dailyGoalMinutes,
       required this.createdAt});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -157,6 +176,7 @@ class User extends DataClass implements Insertable<User> {
     map['streak_count'] = Variable<int>(streakCount);
     map['longest_streak'] = Variable<int>(longestStreak);
     map['total_focus_seconds'] = Variable<int>(totalFocusSeconds);
+    map['daily_goal_minutes'] = Variable<int>(dailyGoalMinutes);
     map['created_at'] = Variable<DateTime>(createdAt);
     return map;
   }
@@ -170,6 +190,7 @@ class User extends DataClass implements Insertable<User> {
       streakCount: Value(streakCount),
       longestStreak: Value(longestStreak),
       totalFocusSeconds: Value(totalFocusSeconds),
+      dailyGoalMinutes: Value(dailyGoalMinutes),
       createdAt: Value(createdAt),
     );
   }
@@ -183,6 +204,7 @@ class User extends DataClass implements Insertable<User> {
       streakCount: serializer.fromJson<int>(json['streakCount']),
       longestStreak: serializer.fromJson<int>(json['longestStreak']),
       totalFocusSeconds: serializer.fromJson<int>(json['totalFocusSeconds']),
+      dailyGoalMinutes: serializer.fromJson<int>(json['dailyGoalMinutes']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
     );
   }
@@ -195,6 +217,7 @@ class User extends DataClass implements Insertable<User> {
       'streakCount': serializer.toJson<int>(streakCount),
       'longestStreak': serializer.toJson<int>(longestStreak),
       'totalFocusSeconds': serializer.toJson<int>(totalFocusSeconds),
+      'dailyGoalMinutes': serializer.toJson<int>(dailyGoalMinutes),
       'createdAt': serializer.toJson<DateTime>(createdAt),
     };
   }
@@ -205,6 +228,7 @@ class User extends DataClass implements Insertable<User> {
           int? streakCount,
           int? longestStreak,
           int? totalFocusSeconds,
+          int? dailyGoalMinutes,
           DateTime? createdAt}) =>
       User(
         id: id ?? this.id,
@@ -212,6 +236,7 @@ class User extends DataClass implements Insertable<User> {
         streakCount: streakCount ?? this.streakCount,
         longestStreak: longestStreak ?? this.longestStreak,
         totalFocusSeconds: totalFocusSeconds ?? this.totalFocusSeconds,
+        dailyGoalMinutes: dailyGoalMinutes ?? this.dailyGoalMinutes,
         createdAt: createdAt ?? this.createdAt,
       );
   User copyWithCompanion(UsersCompanion data) {
@@ -227,6 +252,9 @@ class User extends DataClass implements Insertable<User> {
       totalFocusSeconds: data.totalFocusSeconds.present
           ? data.totalFocusSeconds.value
           : this.totalFocusSeconds,
+      dailyGoalMinutes: data.dailyGoalMinutes.present
+          ? data.dailyGoalMinutes.value
+          : this.dailyGoalMinutes,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
     );
   }
@@ -239,6 +267,7 @@ class User extends DataClass implements Insertable<User> {
           ..write('streakCount: $streakCount, ')
           ..write('longestStreak: $longestStreak, ')
           ..write('totalFocusSeconds: $totalFocusSeconds, ')
+          ..write('dailyGoalMinutes: $dailyGoalMinutes, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
@@ -246,7 +275,7 @@ class User extends DataClass implements Insertable<User> {
 
   @override
   int get hashCode => Object.hash(id, displayName, streakCount, longestStreak,
-      totalFocusSeconds, createdAt);
+      totalFocusSeconds, dailyGoalMinutes, createdAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -256,6 +285,7 @@ class User extends DataClass implements Insertable<User> {
           other.streakCount == this.streakCount &&
           other.longestStreak == this.longestStreak &&
           other.totalFocusSeconds == this.totalFocusSeconds &&
+          other.dailyGoalMinutes == this.dailyGoalMinutes &&
           other.createdAt == this.createdAt);
 }
 
@@ -265,6 +295,7 @@ class UsersCompanion extends UpdateCompanion<User> {
   final Value<int> streakCount;
   final Value<int> longestStreak;
   final Value<int> totalFocusSeconds;
+  final Value<int> dailyGoalMinutes;
   final Value<DateTime> createdAt;
   final Value<int> rowid;
   const UsersCompanion({
@@ -273,6 +304,7 @@ class UsersCompanion extends UpdateCompanion<User> {
     this.streakCount = const Value.absent(),
     this.longestStreak = const Value.absent(),
     this.totalFocusSeconds = const Value.absent(),
+    this.dailyGoalMinutes = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
@@ -282,6 +314,7 @@ class UsersCompanion extends UpdateCompanion<User> {
     this.streakCount = const Value.absent(),
     this.longestStreak = const Value.absent(),
     this.totalFocusSeconds = const Value.absent(),
+    this.dailyGoalMinutes = const Value.absent(),
     required DateTime createdAt,
     this.rowid = const Value.absent(),
   })  : id = Value(id),
@@ -292,6 +325,7 @@ class UsersCompanion extends UpdateCompanion<User> {
     Expression<int>? streakCount,
     Expression<int>? longestStreak,
     Expression<int>? totalFocusSeconds,
+    Expression<int>? dailyGoalMinutes,
     Expression<DateTime>? createdAt,
     Expression<int>? rowid,
   }) {
@@ -301,6 +335,7 @@ class UsersCompanion extends UpdateCompanion<User> {
       if (streakCount != null) 'streak_count': streakCount,
       if (longestStreak != null) 'longest_streak': longestStreak,
       if (totalFocusSeconds != null) 'total_focus_seconds': totalFocusSeconds,
+      if (dailyGoalMinutes != null) 'daily_goal_minutes': dailyGoalMinutes,
       if (createdAt != null) 'created_at': createdAt,
       if (rowid != null) 'rowid': rowid,
     });
@@ -312,6 +347,7 @@ class UsersCompanion extends UpdateCompanion<User> {
       Value<int>? streakCount,
       Value<int>? longestStreak,
       Value<int>? totalFocusSeconds,
+      Value<int>? dailyGoalMinutes,
       Value<DateTime>? createdAt,
       Value<int>? rowid}) {
     return UsersCompanion(
@@ -320,6 +356,7 @@ class UsersCompanion extends UpdateCompanion<User> {
       streakCount: streakCount ?? this.streakCount,
       longestStreak: longestStreak ?? this.longestStreak,
       totalFocusSeconds: totalFocusSeconds ?? this.totalFocusSeconds,
+      dailyGoalMinutes: dailyGoalMinutes ?? this.dailyGoalMinutes,
       createdAt: createdAt ?? this.createdAt,
       rowid: rowid ?? this.rowid,
     );
@@ -343,6 +380,9 @@ class UsersCompanion extends UpdateCompanion<User> {
     if (totalFocusSeconds.present) {
       map['total_focus_seconds'] = Variable<int>(totalFocusSeconds.value);
     }
+    if (dailyGoalMinutes.present) {
+      map['daily_goal_minutes'] = Variable<int>(dailyGoalMinutes.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -360,6 +400,7 @@ class UsersCompanion extends UpdateCompanion<User> {
           ..write('streakCount: $streakCount, ')
           ..write('longestStreak: $longestStreak, ')
           ..write('totalFocusSeconds: $totalFocusSeconds, ')
+          ..write('dailyGoalMinutes: $dailyGoalMinutes, ')
           ..write('createdAt: $createdAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -2265,6 +2306,7 @@ typedef $$UsersTableCreateCompanionBuilder = UsersCompanion Function({
   Value<int> streakCount,
   Value<int> longestStreak,
   Value<int> totalFocusSeconds,
+  Value<int> dailyGoalMinutes,
   required DateTime createdAt,
   Value<int> rowid,
 });
@@ -2274,6 +2316,7 @@ typedef $$UsersTableUpdateCompanionBuilder = UsersCompanion Function({
   Value<int> streakCount,
   Value<int> longestStreak,
   Value<int> totalFocusSeconds,
+  Value<int> dailyGoalMinutes,
   Value<DateTime> createdAt,
   Value<int> rowid,
 });
@@ -2300,6 +2343,10 @@ class $$UsersTableFilterComposer extends Composer<_$AppDatabase, $UsersTable> {
 
   ColumnFilters<int> get totalFocusSeconds => $composableBuilder(
       column: $table.totalFocusSeconds,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get dailyGoalMinutes => $composableBuilder(
+      column: $table.dailyGoalMinutes,
       builder: (column) => ColumnFilters(column));
 
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
@@ -2332,6 +2379,10 @@ class $$UsersTableOrderingComposer
       column: $table.totalFocusSeconds,
       builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<int> get dailyGoalMinutes => $composableBuilder(
+      column: $table.dailyGoalMinutes,
+      builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnOrderings(column));
 }
@@ -2359,6 +2410,9 @@ class $$UsersTableAnnotationComposer
 
   GeneratedColumn<int> get totalFocusSeconds => $composableBuilder(
       column: $table.totalFocusSeconds, builder: (column) => column);
+
+  GeneratedColumn<int> get dailyGoalMinutes => $composableBuilder(
+      column: $table.dailyGoalMinutes, builder: (column) => column);
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -2392,6 +2446,7 @@ class $$UsersTableTableManager extends RootTableManager<
             Value<int> streakCount = const Value.absent(),
             Value<int> longestStreak = const Value.absent(),
             Value<int> totalFocusSeconds = const Value.absent(),
+            Value<int> dailyGoalMinutes = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
@@ -2401,6 +2456,7 @@ class $$UsersTableTableManager extends RootTableManager<
             streakCount: streakCount,
             longestStreak: longestStreak,
             totalFocusSeconds: totalFocusSeconds,
+            dailyGoalMinutes: dailyGoalMinutes,
             createdAt: createdAt,
             rowid: rowid,
           ),
@@ -2410,6 +2466,7 @@ class $$UsersTableTableManager extends RootTableManager<
             Value<int> streakCount = const Value.absent(),
             Value<int> longestStreak = const Value.absent(),
             Value<int> totalFocusSeconds = const Value.absent(),
+            Value<int> dailyGoalMinutes = const Value.absent(),
             required DateTime createdAt,
             Value<int> rowid = const Value.absent(),
           }) =>
@@ -2419,6 +2476,7 @@ class $$UsersTableTableManager extends RootTableManager<
             streakCount: streakCount,
             longestStreak: longestStreak,
             totalFocusSeconds: totalFocusSeconds,
+            dailyGoalMinutes: dailyGoalMinutes,
             createdAt: createdAt,
             rowid: rowid,
           ),
