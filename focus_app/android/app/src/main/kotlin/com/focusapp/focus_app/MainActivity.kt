@@ -97,7 +97,7 @@ class MainActivity : FlutterActivity() {
 
                     if (isHardLock) {
                         setSecure(true)
-                        suppressNotifications(true)
+                        try { suppressNotifications(true) } catch (_: SecurityException) {}
                         enableImmersiveMode()
                         startForegroundService()
                         val prefs = getSharedPreferences("focus_lock_prefs", Context.MODE_PRIVATE)

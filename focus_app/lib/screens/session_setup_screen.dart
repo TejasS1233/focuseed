@@ -67,8 +67,7 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
     final mix = Map<String, double>.from(_mixConfig);
     mix.removeWhere((_, v) => v <= 0);
 
-    final blacklistState = ref.read(blacklistProvider);
-    final blacklisted = blacklistState.blacklistedPackages;
+    final blacklisted = await ref.read(blacklistProvider.notifier).load();
 
     ref.read(sessionProvider.notifier).startSessionWithBlacklist(
       mode: _mode,

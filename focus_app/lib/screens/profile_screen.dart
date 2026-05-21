@@ -87,7 +87,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             child: IconButton(
               icon: Icon(isDark ? Icons.dark_mode : Icons.light_mode, size: 18),
               color: context.textMuted,
-              onPressed: () => ref.read(themeModeProvider.notifier).state = !isDark,
+              onPressed: () => ref.read(themeModeProvider.notifier).toggle(),
             ),
           ),
         ],

@@ -57,14 +57,12 @@
     <Button
         android:id="@+id/widget_button"
         android:layout_width="match_parent"
-        android:layout_height="38dp"
+        android:layout_height="40dp"
         android:layout_marginTop="14dp"
         android:text="START A SESSION"
         android:textColor="#08080F"
         android:backgroundTint="#00FF88"
         android:gravity="center"
-        android:paddingHorizontal="20dp"
-    android:letterSpacing="0.08"
         android:textSize="11sp"
         android:textStyle="bold"
         android:fontFamily="sans-serif-medium" />
