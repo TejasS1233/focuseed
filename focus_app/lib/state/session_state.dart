@@ -5,6 +5,8 @@ import '../core/services/lock_service.dart';
 import '../core/services/audio_service.dart';
 import '../core/db/database.dart';
 import '../core/db/daos/session_dao.dart';
+import '../core/db/daos/achievement_dao.dart';
+import '../core/services/widget_service.dart';
 import 'app_state.dart';
 
 enum SessionStatus { idle, running, paused, completed, abandoned }
@@ -131,7 +133,8 @@ class SessionNotifier extends Notifier<SessionState> {
     final sessionId = state.sessionId;
     if (userId == null || sessionId == null) return;
 
-    final dao = SessionDao(ref.read(databaseProvider));
+    final db = ref.read(databaseProvider);
+    final dao = SessionDao(db);
     final now = DateTime.now();
     dao.insertSession(Session(
       id: sessionId,
@@ -145,6 +148,11 @@ class SessionNotifier extends Notifier<SessionState> {
       outcome: completed ? 'completed' : 'abandoned',
       roomId: null,
     ));
+
+    if (completed) {
+      AchievementDao(db).checkAndUnlock(userId);
+      _updateWidget(db, userId);
+    }
   }
 
   Future<void> startSessionWithBlacklist({
@@ -179,6 +187,16 @@ class SessionNotifier extends Notifier<SessionState> {
     if (ambientSound != null) {
       _audio.play(ambientSound);
     }
+  }
+
+  Future<void> _updateWidget(AppDatabase db, String userId) async {
+    final dao = SessionDao(db);
+    final streak = await dao.getCurrentStreak(userId);
+    final todaySeconds = await dao.getTodaySeconds(userId);
+    await WidgetService.updateWidget(
+      streak: streak,
+      todayMinutes: todaySeconds ~/ 60,
+    );
   }
 
   void onAppLifecycleChange(AppLifecycleState lifecycleState) {
