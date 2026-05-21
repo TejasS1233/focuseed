@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/services/lock_service.dart';
-import '../core/services/audio_service.dart';
+import '../core/services/audio_mixer_service.dart';
 import '../core/db/database.dart';
 import '../core/db/daos/session_dao.dart';
 import '../core/db/daos/achievement_dao.dart';
@@ -18,7 +18,7 @@ class SessionState {
   final int? setDurationSeconds;
   final String mode;
   final String? intention;
-  final String? ambientSound;
+  final Map<String, double> mixConfig;
   final String? userId;
 
   SessionState({
@@ -28,7 +28,7 @@ class SessionState {
     this.setDurationSeconds,
     this.mode = 'soft',
     this.intention,
-    this.ambientSound,
+    this.mixConfig = const {},
     this.userId,
   });
 
@@ -39,7 +39,7 @@ class SessionState {
     int? setDurationSeconds,
     String? mode,
     String? intention,
-    String? ambientSound,
+    Map<String, double>? mixConfig,
     String? userId,
   }) {
     return SessionState(
@@ -49,7 +49,7 @@ class SessionState {
       setDurationSeconds: setDurationSeconds ?? this.setDurationSeconds,
       mode: mode ?? this.mode,
       intention: intention ?? this.intention,
-      ambientSound: ambientSound ?? this.ambientSound,
+      mixConfig: mixConfig ?? this.mixConfig,
       userId: userId ?? this.userId,
     );
   }
@@ -58,28 +58,38 @@ class SessionState {
 class SessionNotifier extends Notifier<SessionState> {
   Timer? _timer;
   int _startSeconds = 0;
-  final AudioService _audio = AudioService();
+  final AudioMixerService _mixer = AudioMixerService();
   final LockService _lock = LockService();
+  bool _mixerReady = false;
 
   @override
   SessionState build() => SessionState();
 
   String _generateId() => DateTime.now().microsecondsSinceEpoch.toString();
 
+  Future<void> _ensureMixer() async {
+    if (!_mixerReady) {
+      await _mixer.init();
+      _mixerReady = true;
+    }
+  }
+
   Future<void> startSession({
     required String mode,
     required int durationMinutes,
     String? intention,
-    String? ambientSound,
+    Map<String, double>? mixConfig,
   }) async {
+    await _ensureMixer();
     final userId = ref.read(userProvider);
+    final mix = mixConfig ?? {};
     state = SessionState(
       sessionId: _generateId(),
       status: SessionStatus.running,
       mode: mode,
       setDurationSeconds: durationMinutes * 60,
       intention: intention,
-      ambientSound: ambientSound,
+      mixConfig: mix,
       userId: userId,
     );
     _startSeconds = DateTime.now().millisecondsSinceEpoch ~/ 1000;
@@ -88,18 +98,18 @@ class SessionNotifier extends Notifier<SessionState> {
       state = state.copyWith(elapsedSeconds: now - _startSeconds);
     });
 
-    await     _lock.startLock(
+    await _lock.startLock(
       durationMinutes: durationMinutes,
       hardLock: mode == 'hard',
     );
-    if (ambientSound != null) {
-      _audio.play(ambientSound);
+    if (mix.isNotEmpty) {
+      await _mixer.applyMix(mix);
     }
   }
 
   void pauseSession() {
     _timer?.cancel();
-    _audio.pause();
+    _mixer.pauseAll();
     state = state.copyWith(status: SessionStatus.paused);
   }
 
@@ -110,9 +120,7 @@ class SessionNotifier extends Notifier<SessionState> {
       final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       state = state.copyWith(elapsedSeconds: now - _startSeconds);
     });
-    if (state.ambientSound != null) {
-      _audio.play(state.ambientSound!);
-    }
+    _mixer.playAll();
     state = state.copyWith(status: SessionStatus.running);
   }
 
@@ -121,7 +129,7 @@ class SessionNotifier extends Notifier<SessionState> {
     if (state.mode == 'hard') {
       await _lock.stopLock();
     }
-    _audio.stop();
+    _mixer.stopAll();
     _persistSession(completed);
     state = state.copyWith(
       status: completed ? SessionStatus.completed : SessionStatus.abandoned,
@@ -136,6 +144,9 @@ class SessionNotifier extends Notifier<SessionState> {
     final db = ref.read(databaseProvider);
     final dao = SessionDao(db);
     final now = DateTime.now();
+    final mixStr = AudioMixerService.isEmptyMix(state.mixConfig)
+        ? null
+        : AudioMixerService.serializeMix(state.mixConfig);
     dao.insertSession(Session(
       id: sessionId,
       userId: userId,
@@ -144,7 +155,7 @@ class SessionNotifier extends Notifier<SessionState> {
       endTime: now,
       durationSeconds: state.elapsedSeconds,
       intention: state.intention,
-      ambientSound: state.ambientSound,
+      ambientSound: mixStr,
       outcome: completed ? 'completed' : 'abandoned',
       roomId: null,
     ));
@@ -159,17 +170,19 @@ class SessionNotifier extends Notifier<SessionState> {
     required String mode,
     required int durationMinutes,
     String? intention,
-    String? ambientSound,
+    Map<String, double>? mixConfig,
     List<String> blacklist = const [],
   }) async {
+    await _ensureMixer();
     final userId = ref.read(userProvider);
+    final mix = mixConfig ?? {};
     state = SessionState(
       sessionId: _generateId(),
       status: SessionStatus.running,
       mode: mode,
       setDurationSeconds: durationMinutes * 60,
       intention: intention,
-      ambientSound: ambientSound,
+      mixConfig: mix,
       userId: userId,
     );
     _startSeconds = DateTime.now().millisecondsSinceEpoch ~/ 1000;
@@ -184,8 +197,8 @@ class SessionNotifier extends Notifier<SessionState> {
         blacklist: blacklist,
       );
     }
-    if (ambientSound != null) {
-      _audio.play(ambientSound);
+    if (mix.isNotEmpty) {
+      await _mixer.applyMix(mix);
     }
   }
 
@@ -204,7 +217,7 @@ class SessionNotifier extends Notifier<SessionState> {
     if (lifecycleState == AppLifecycleState.paused) {
       if (state.mode == 'hard') {
         _timer?.cancel();
-        _audio.pause();
+        _mixer.pauseAll();
         state = state.copyWith(status: SessionStatus.paused);
       } else {
         _timer?.cancel();
