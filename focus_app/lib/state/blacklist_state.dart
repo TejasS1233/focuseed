@@ -11,7 +11,12 @@ class BlacklistState {
 
 class BlacklistNotifier extends Notifier<BlacklistState> {
   @override
-  BlacklistState build() => BlacklistState();
+  BlacklistState build() {
+    BlacklistDao(ref.read(databaseProvider)).getAllPackageNames().then((names) {
+      state = BlacklistState(blacklistedPackages: names, isLoading: false);
+    });
+    return BlacklistState();
+  }
 
   Future<void> load() async {
     final dao = BlacklistDao(ref.read(databaseProvider));
