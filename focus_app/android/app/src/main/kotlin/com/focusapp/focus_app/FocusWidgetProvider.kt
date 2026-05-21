@@ -33,8 +33,9 @@ class FocusWidgetProvider : AppWidgetProvider() {
             val todayMinutes = prefs.getInt(KEY_TODAY, 0)
 
             val views = RemoteViews(context.packageName, R.layout.focus_widget)
-            views.setTextViewText(R.id.widget_streak, "🔥 $streak day streak")
-            views.setTextViewText(R.id.widget_today, "⏱ ${todayMinutes}m focused today")
+            views.setTextViewText(R.id.widget_streak, "$streak")
+            views.setTextViewText(R.id.widget_streak_label, if (streak == 1) "day streak" else "day streak")
+            views.setTextViewText(R.id.widget_today, "$todayMinutes min focused today")
 
             val intent = Intent(context, MainActivity::class.java)
             intent.action = Intent.ACTION_MAIN

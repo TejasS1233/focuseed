@@ -100,6 +100,9 @@ class MainActivity : FlutterActivity() {
                         suppressNotifications(true)
                         enableImmersiveMode()
                         startForegroundService()
+                        val prefs = getSharedPreferences("focus_lock_prefs", Context.MODE_PRIVATE)
+                        prefs.edit().putBoolean("service_active", true)
+                            .putStringSet("service_blacklist", currentBlacklist).apply()
                         FocusAccessibilityService.instance?.apply {
                             setBlacklistedPackages(currentBlacklist)
                             activate()
@@ -117,6 +120,8 @@ class MainActivity : FlutterActivity() {
                     stopForegroundService()
                     overlayManager?.hide()
                     FocusAccessibilityService.instance?.deactivate()
+                    getSharedPreferences("focus_lock_prefs", Context.MODE_PRIVATE)
+                        .edit().clear().apply()
                     isHardLock = false
                     result.success(true)
                 }

@@ -126,9 +126,7 @@ class SessionNotifier extends Notifier<SessionState> {
 
   Future<void> endSession({required bool completed}) async {
     _timer?.cancel();
-    if (state.mode == 'hard') {
-      await _lock.stopLock();
-    }
+    await _lock.stopLock();
     _mixer.stopAll();
     _persistSession(completed);
     state = state.copyWith(

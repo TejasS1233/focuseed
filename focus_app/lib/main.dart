@@ -40,12 +40,14 @@ class MainShell extends ConsumerStatefulWidget {
 
 class _MainShellState extends ConsumerState<MainShell> with TickerProviderStateMixin {
   int _tabIndex = 0;
+  late PageController _pageController;
   late AnimationController _navAnimController;
   late Animation<double> _navAnim;
 
   @override
   void initState() {
     super.initState();
+    _pageController = PageController();
     _navAnimController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 400),
@@ -60,6 +62,7 @@ class _MainShellState extends ConsumerState<MainShell> with TickerProviderStateM
 
   @override
   void dispose() {
+    _pageController.dispose();
     _navAnimController.dispose();
     super.dispose();
   }
@@ -90,14 +93,11 @@ class _MainShellState extends ConsumerState<MainShell> with TickerProviderStateM
 
   void _onTap(int i) {
     HapticFeedback.selectionClick();
-    if (i == 2) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const ProfileScreen()),
-      );
-      return;
-    }
-    setState(() => _tabIndex = i);
+    _pageController.animateToPage(
+      i,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOutCubic,
+    );
   }
 
   @override
@@ -118,8 +118,9 @@ class _MainShellState extends ConsumerState<MainShell> with TickerProviderStateM
         extendBody: true,
         body: Container(
           decoration: context.gradientBg,
-          child: IndexedStack(
-            index: _tabIndex,
+          child: PageView(
+            controller: _pageController,
+            onPageChanged: (i) => setState(() => _tabIndex = i),
             children: _screens,
           ),
         ),

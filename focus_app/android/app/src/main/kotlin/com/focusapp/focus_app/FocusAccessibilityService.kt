@@ -1,12 +1,16 @@
 package com.focusapp.focus_app
 
 import android.accessibilityservice.AccessibilityService
+import android.content.Context
 import android.content.Intent
 import android.view.accessibility.AccessibilityEvent
 
 class FocusAccessibilityService : AccessibilityService() {
     companion object {
         var instance: FocusAccessibilityService? = null
+        private const val PREFS_NAME = "focus_lock_prefs"
+        private const val KEY_ACTIVE = "service_active"
+        private const val KEY_BLACKLIST = "service_blacklist"
     }
 
     private var blacklistedPackages: Set<String> = emptySet()
@@ -46,6 +50,12 @@ class FocusAccessibilityService : AccessibilityService() {
     override fun onServiceConnected() {
         super.onServiceConnected()
         instance = this
+        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        if (prefs.getBoolean(KEY_ACTIVE, false)) {
+            val saved = prefs.getStringSet(KEY_BLACKLIST, emptySet())
+            blacklistedPackages = saved ?: emptySet()
+            isActive = true
+        }
     }
 
     override fun onDestroy() {
