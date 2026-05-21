@@ -206,6 +206,12 @@ class _WeekChart extends StatelessWidget {
   Widget build(BuildContext context) {
     final entries = dailyTotals.entries.toList()
       ..sort((a, b) => a.key.compareTo(b.key));
+    if (entries.isEmpty) {
+      return SizedBox(
+        height: 180,
+        child: Center(child: Text('No data this week', style: AppTypography.body.copyWith(color: context.textMuted))),
+      );
+    }
     final maxVal = entries.map((e) => e.value).reduce((a, b) => a > b ? a : b).toDouble();
 
     return Container(

@@ -4,6 +4,7 @@ import '../core/db/database.dart';
 import '../core/db/daos/session_dao.dart';
 import '../core/db/daos/achievement_dao.dart';
 import '../core/db/daos/challenge_dao.dart';
+import '../core/services/seed_service.dart';
 import '../core/services/widget_service.dart';
 import '../state/app_state.dart';
 import '../theme/theme.dart';
@@ -395,6 +396,36 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     ),
                     onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const BlacklistScreen())),
                   ),
+                  if (bool.fromEnvironment('DEBUG', defaultValue: false))
+                    const Divider(height: 1, indent: 60, color: AppColorsLight.border),
+                  if (bool.fromEnvironment('DEBUG', defaultValue: false))
+                    ListTile(
+                      leading: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppColors.tertiary.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(AppRadius.md),
+                        ),
+                        child: Icon(Icons.science_outlined, color: AppColors.tertiary, size: 20),
+                      ),
+                      title: Text('Seed Sample Data', style: AppTypography.heading3),
+                      subtitle: Text('Populate DB with demo sessions', style: AppTypography.bodySmall.copyWith(color: context.textMuted)),
+                      trailing: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(color: context.border.withOpacity(0.3), borderRadius: BorderRadius.circular(AppRadius.sm)),
+                        child: Icon(Icons.chevron_right, color: context.textMuted, size: 20),
+                      ),
+                      onTap: () async {
+                        final user = ref.read(userProvider);
+                        if (user == null) return;
+                        await SeedService(ref.read(databaseProvider)).seedAll(user);
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Sample data seeded!')),
+                          );
+                        }
+                      },
+                    ),
                 ],
               ),
             ),
