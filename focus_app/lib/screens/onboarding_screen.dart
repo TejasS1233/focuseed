@@ -21,10 +21,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     super.dispose();
   }
 
-  void _complete() {
+  Future<void> _complete() async {
     final name = _controller.text.trim();
     final userId = name.isEmpty ? _generateId() : name;
     ref.read(userProvider.notifier).state = userId;
+    final db = ref.read(databaseProvider);
+    await db.createUser(userId, name.isEmpty ? 'Gardener' : name);
+    if (!context.mounted) return;
     Navigator.pushReplacement(context, MaterialPageRoute(
       builder: (_) => const _SetupBlacklistScreen(),
     ));

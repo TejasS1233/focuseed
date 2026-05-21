@@ -100,7 +100,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(24),
-              decoration: AppEffects.glassCard(radius: AppRadius.xl),
+              decoration: AppEffects.glassCard(bg: context.surfaceElevated, radius: AppRadius.xl),
               child: Row(
                 children: [
                   Container(
@@ -222,7 +222,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ? Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(24),
-                    decoration: AppEffects.glass(radius: AppRadius.lg),
+                    decoration: AppEffects.glass(bg: context.surfaceElevated, radius: AppRadius.lg),
                     child: Column(
                       children: [
                         Text('🏆', style: const TextStyle(fontSize: 40)),

@@ -86,7 +86,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               child: Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(24),
-                decoration: AppEffects.glassCard(accentColor: AppColors.primaryGlow, radius: AppRadius.xl),
+                decoration: AppEffects.glassCard(bg: context.surfaceElevated, accentColor: AppColors.primaryGlow, radius: AppRadius.xl),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -105,7 +105,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ],
                     ),
                     const SizedBox(height: 20),
-                    Text('Ready to grow?', style: AppTypography.display2),
+                    Text('Ready to grow?', style: AppTypography.display2.copyWith(color: context.textPrimary)),
                     const SizedBox(height: 8),
                     Text('Start a session and watch your garden thrive',
                       style: AppTypography.body.copyWith(color: context.textMuted)),
@@ -247,12 +247,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ? Container(
                           width: double.infinity,
                           padding: const EdgeInsets.all(24),
-                          decoration: AppEffects.glass(radius: AppRadius.lg),
+                          decoration: AppEffects.glass(bg: context.surfaceElevated, radius: AppRadius.lg),
                           child: Column(
                             children: [
                               Text('🌱', style: const TextStyle(fontSize: 40)),
                               const SizedBox(height: 8),
-                              Text('Your garden awaits', style: AppTypography.heading2),
+                              Text('Your garden awaits', style: AppTypography.heading2.copyWith(color: context.textPrimary)),
                               const SizedBox(height: 4),
                               Text('Complete a session to plant your first seed',
                                 style: AppTypography.bodySmall.copyWith(color: context.textMuted)),

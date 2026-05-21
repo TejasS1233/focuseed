@@ -53,8 +53,8 @@ class _MainShellState extends ConsumerState<MainShell> with TickerProviderStateM
     _navAnim = CurvedAnimation(parent: _navAnimController, curve: Curves.easeOutCubic);
     _navAnimController.forward();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkOnboarding();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await _checkOnboarding();
     });
   }
 
@@ -64,14 +64,22 @@ class _MainShellState extends ConsumerState<MainShell> with TickerProviderStateM
     super.dispose();
   }
 
-  void _checkOnboarding() {
+  Future<void> _checkOnboarding() async {
     final user = ref.read(userProvider);
-    if (user == null) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const OnboardingScreen()),
-      );
+    if (user != null) return;
+
+    final db = ref.read(databaseProvider);
+    final existingUserId = await db.getExistingUserId();
+    if (existingUserId != null) {
+      ref.read(userProvider.notifier).state = existingUserId;
+      return;
     }
+
+    if (!context.mounted) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const OnboardingScreen()),
+    );
   }
 
   final _screens = const [

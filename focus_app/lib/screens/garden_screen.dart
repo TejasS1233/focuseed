@@ -55,7 +55,7 @@ class _GardenScreenState extends ConsumerState<GardenScreen> {
                           ),
                         ),
                         const SizedBox(height: 24),
-                        Text('Your garden is empty', style: AppTypography.display2),
+                        Text('Your garden is empty', style: AppTypography.display2.copyWith(color: context.textPrimary)),
                         const SizedBox(height: 8),
                         Text('Complete focus sessions to plant trees',
                           style: AppTypography.body.copyWith(color: context.textMuted)),

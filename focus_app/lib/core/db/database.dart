@@ -118,6 +118,19 @@ class AppDatabase extends _$AppDatabase {
       dailyGoalMinutes: Value(minutes),
     ));
   }
+
+  Future<String?> getExistingUserId() async {
+    final user = await (select(users)..limit(1)).getSingleOrNull();
+    return user?.id;
+  }
+
+  Future<void> createUser(String id, String displayName) async {
+    await into(users).insert(UsersCompanion(
+      id: Value(id),
+      displayName: Value(displayName),
+      createdAt: Value(DateTime.now()),
+    ));
+  }
 }
 
 LazyDatabase _openConnection() {
