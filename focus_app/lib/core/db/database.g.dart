@@ -1702,6 +1702,385 @@ class AchievementsCompanion extends UpdateCompanion<Achievement> {
   }
 }
 
+class $JournalEntriesTable extends JournalEntries
+    with TableInfo<$JournalEntriesTable, JournalEntry> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $JournalEntriesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+      'user_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _sessionIdMeta =
+      const VerificationMeta('sessionId');
+  @override
+  late final GeneratedColumn<String> sessionId = GeneratedColumn<String>(
+      'session_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _ratingMeta = const VerificationMeta('rating');
+  @override
+  late final GeneratedColumn<int> rating = GeneratedColumn<int>(
+      'rating', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(3));
+  static const VerificationMeta _contentMeta =
+      const VerificationMeta('content');
+  @override
+  late final GeneratedColumn<String> content = GeneratedColumn<String>(
+      'content', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _moodMeta = const VerificationMeta('mood');
+  @override
+  late final GeneratedColumn<String> mood = GeneratedColumn<String>(
+      'mood', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, userId, sessionId, rating, content, mood, createdAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'journal_entries';
+  @override
+  VerificationContext validateIntegrity(Insertable<JournalEntry> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(_userIdMeta,
+          userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta));
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
+    }
+    if (data.containsKey('session_id')) {
+      context.handle(_sessionIdMeta,
+          sessionId.isAcceptableOrUnknown(data['session_id']!, _sessionIdMeta));
+    } else if (isInserting) {
+      context.missing(_sessionIdMeta);
+    }
+    if (data.containsKey('rating')) {
+      context.handle(_ratingMeta,
+          rating.isAcceptableOrUnknown(data['rating']!, _ratingMeta));
+    }
+    if (data.containsKey('content')) {
+      context.handle(_contentMeta,
+          content.isAcceptableOrUnknown(data['content']!, _contentMeta));
+    } else if (isInserting) {
+      context.missing(_contentMeta);
+    }
+    if (data.containsKey('mood')) {
+      context.handle(
+          _moodMeta, mood.isAcceptableOrUnknown(data['mood']!, _moodMeta));
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  JournalEntry map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return JournalEntry(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      userId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}user_id'])!,
+      sessionId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}session_id'])!,
+      rating: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}rating'])!,
+      content: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}content'])!,
+      mood: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}mood']),
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+    );
+  }
+
+  @override
+  $JournalEntriesTable createAlias(String alias) {
+    return $JournalEntriesTable(attachedDatabase, alias);
+  }
+}
+
+class JournalEntry extends DataClass implements Insertable<JournalEntry> {
+  final String id;
+  final String userId;
+  final String sessionId;
+  final int rating;
+  final String content;
+  final String? mood;
+  final DateTime createdAt;
+  const JournalEntry(
+      {required this.id,
+      required this.userId,
+      required this.sessionId,
+      required this.rating,
+      required this.content,
+      this.mood,
+      required this.createdAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['user_id'] = Variable<String>(userId);
+    map['session_id'] = Variable<String>(sessionId);
+    map['rating'] = Variable<int>(rating);
+    map['content'] = Variable<String>(content);
+    if (!nullToAbsent || mood != null) {
+      map['mood'] = Variable<String>(mood);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  JournalEntriesCompanion toCompanion(bool nullToAbsent) {
+    return JournalEntriesCompanion(
+      id: Value(id),
+      userId: Value(userId),
+      sessionId: Value(sessionId),
+      rating: Value(rating),
+      content: Value(content),
+      mood: mood == null && nullToAbsent ? const Value.absent() : Value(mood),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory JournalEntry.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return JournalEntry(
+      id: serializer.fromJson<String>(json['id']),
+      userId: serializer.fromJson<String>(json['userId']),
+      sessionId: serializer.fromJson<String>(json['sessionId']),
+      rating: serializer.fromJson<int>(json['rating']),
+      content: serializer.fromJson<String>(json['content']),
+      mood: serializer.fromJson<String?>(json['mood']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'userId': serializer.toJson<String>(userId),
+      'sessionId': serializer.toJson<String>(sessionId),
+      'rating': serializer.toJson<int>(rating),
+      'content': serializer.toJson<String>(content),
+      'mood': serializer.toJson<String?>(mood),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  JournalEntry copyWith(
+          {String? id,
+          String? userId,
+          String? sessionId,
+          int? rating,
+          String? content,
+          Value<String?> mood = const Value.absent(),
+          DateTime? createdAt}) =>
+      JournalEntry(
+        id: id ?? this.id,
+        userId: userId ?? this.userId,
+        sessionId: sessionId ?? this.sessionId,
+        rating: rating ?? this.rating,
+        content: content ?? this.content,
+        mood: mood.present ? mood.value : this.mood,
+        createdAt: createdAt ?? this.createdAt,
+      );
+  JournalEntry copyWithCompanion(JournalEntriesCompanion data) {
+    return JournalEntry(
+      id: data.id.present ? data.id.value : this.id,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      sessionId: data.sessionId.present ? data.sessionId.value : this.sessionId,
+      rating: data.rating.present ? data.rating.value : this.rating,
+      content: data.content.present ? data.content.value : this.content,
+      mood: data.mood.present ? data.mood.value : this.mood,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('JournalEntry(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('sessionId: $sessionId, ')
+          ..write('rating: $rating, ')
+          ..write('content: $content, ')
+          ..write('mood: $mood, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, userId, sessionId, rating, content, mood, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is JournalEntry &&
+          other.id == this.id &&
+          other.userId == this.userId &&
+          other.sessionId == this.sessionId &&
+          other.rating == this.rating &&
+          other.content == this.content &&
+          other.mood == this.mood &&
+          other.createdAt == this.createdAt);
+}
+
+class JournalEntriesCompanion extends UpdateCompanion<JournalEntry> {
+  final Value<String> id;
+  final Value<String> userId;
+  final Value<String> sessionId;
+  final Value<int> rating;
+  final Value<String> content;
+  final Value<String?> mood;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const JournalEntriesCompanion({
+    this.id = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.sessionId = const Value.absent(),
+    this.rating = const Value.absent(),
+    this.content = const Value.absent(),
+    this.mood = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  JournalEntriesCompanion.insert({
+    required String id,
+    required String userId,
+    required String sessionId,
+    this.rating = const Value.absent(),
+    required String content,
+    this.mood = const Value.absent(),
+    required DateTime createdAt,
+    this.rowid = const Value.absent(),
+  })  : id = Value(id),
+        userId = Value(userId),
+        sessionId = Value(sessionId),
+        content = Value(content),
+        createdAt = Value(createdAt);
+  static Insertable<JournalEntry> custom({
+    Expression<String>? id,
+    Expression<String>? userId,
+    Expression<String>? sessionId,
+    Expression<int>? rating,
+    Expression<String>? content,
+    Expression<String>? mood,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (userId != null) 'user_id': userId,
+      if (sessionId != null) 'session_id': sessionId,
+      if (rating != null) 'rating': rating,
+      if (content != null) 'content': content,
+      if (mood != null) 'mood': mood,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  JournalEntriesCompanion copyWith(
+      {Value<String>? id,
+      Value<String>? userId,
+      Value<String>? sessionId,
+      Value<int>? rating,
+      Value<String>? content,
+      Value<String?>? mood,
+      Value<DateTime>? createdAt,
+      Value<int>? rowid}) {
+    return JournalEntriesCompanion(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      sessionId: sessionId ?? this.sessionId,
+      rating: rating ?? this.rating,
+      content: content ?? this.content,
+      mood: mood ?? this.mood,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (sessionId.present) {
+      map['session_id'] = Variable<String>(sessionId.value);
+    }
+    if (rating.present) {
+      map['rating'] = Variable<int>(rating.value);
+    }
+    if (content.present) {
+      map['content'] = Variable<String>(content.value);
+    }
+    if (mood.present) {
+      map['mood'] = Variable<String>(mood.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('JournalEntriesCompanion(')
+          ..write('id: $id, ')
+          ..write('userId: $userId, ')
+          ..write('sessionId: $sessionId, ')
+          ..write('rating: $rating, ')
+          ..write('content: $content, ')
+          ..write('mood: $mood, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $BlacklistEntryTable extends BlacklistEntry
     with TableInfo<$BlacklistEntryTable, BlacklistEntryData> {
   @override
@@ -1870,13 +2249,14 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $SessionsTable sessions = $SessionsTable(this);
   late final $TreesTable trees = $TreesTable(this);
   late final $AchievementsTable achievements = $AchievementsTable(this);
+  late final $JournalEntriesTable journalEntries = $JournalEntriesTable(this);
   late final $BlacklistEntryTable blacklistEntry = $BlacklistEntryTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities =>
-      [users, sessions, trees, achievements, blacklistEntry];
+      [users, sessions, trees, achievements, journalEntries, blacklistEntry];
 }
 
 typedef $$UsersTableCreateCompanionBuilder = UsersCompanion Function({
@@ -2717,6 +3097,210 @@ typedef $$AchievementsTableProcessedTableManager = ProcessedTableManager<
     ),
     Achievement,
     PrefetchHooks Function()>;
+typedef $$JournalEntriesTableCreateCompanionBuilder = JournalEntriesCompanion
+    Function({
+  required String id,
+  required String userId,
+  required String sessionId,
+  Value<int> rating,
+  required String content,
+  Value<String?> mood,
+  required DateTime createdAt,
+  Value<int> rowid,
+});
+typedef $$JournalEntriesTableUpdateCompanionBuilder = JournalEntriesCompanion
+    Function({
+  Value<String> id,
+  Value<String> userId,
+  Value<String> sessionId,
+  Value<int> rating,
+  Value<String> content,
+  Value<String?> mood,
+  Value<DateTime> createdAt,
+  Value<int> rowid,
+});
+
+class $$JournalEntriesTableFilterComposer
+    extends Composer<_$AppDatabase, $JournalEntriesTable> {
+  $$JournalEntriesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get userId => $composableBuilder(
+      column: $table.userId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get sessionId => $composableBuilder(
+      column: $table.sessionId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get rating => $composableBuilder(
+      column: $table.rating, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get content => $composableBuilder(
+      column: $table.content, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get mood => $composableBuilder(
+      column: $table.mood, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+}
+
+class $$JournalEntriesTableOrderingComposer
+    extends Composer<_$AppDatabase, $JournalEntriesTable> {
+  $$JournalEntriesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get userId => $composableBuilder(
+      column: $table.userId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get sessionId => $composableBuilder(
+      column: $table.sessionId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get rating => $composableBuilder(
+      column: $table.rating, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get content => $composableBuilder(
+      column: $table.content, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get mood => $composableBuilder(
+      column: $table.mood, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+}
+
+class $$JournalEntriesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $JournalEntriesTable> {
+  $$JournalEntriesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get userId =>
+      $composableBuilder(column: $table.userId, builder: (column) => column);
+
+  GeneratedColumn<String> get sessionId =>
+      $composableBuilder(column: $table.sessionId, builder: (column) => column);
+
+  GeneratedColumn<int> get rating =>
+      $composableBuilder(column: $table.rating, builder: (column) => column);
+
+  GeneratedColumn<String> get content =>
+      $composableBuilder(column: $table.content, builder: (column) => column);
+
+  GeneratedColumn<String> get mood =>
+      $composableBuilder(column: $table.mood, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+}
+
+class $$JournalEntriesTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $JournalEntriesTable,
+    JournalEntry,
+    $$JournalEntriesTableFilterComposer,
+    $$JournalEntriesTableOrderingComposer,
+    $$JournalEntriesTableAnnotationComposer,
+    $$JournalEntriesTableCreateCompanionBuilder,
+    $$JournalEntriesTableUpdateCompanionBuilder,
+    (
+      JournalEntry,
+      BaseReferences<_$AppDatabase, $JournalEntriesTable, JournalEntry>
+    ),
+    JournalEntry,
+    PrefetchHooks Function()> {
+  $$JournalEntriesTableTableManager(
+      _$AppDatabase db, $JournalEntriesTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$JournalEntriesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$JournalEntriesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$JournalEntriesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> id = const Value.absent(),
+            Value<String> userId = const Value.absent(),
+            Value<String> sessionId = const Value.absent(),
+            Value<int> rating = const Value.absent(),
+            Value<String> content = const Value.absent(),
+            Value<String?> mood = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              JournalEntriesCompanion(
+            id: id,
+            userId: userId,
+            sessionId: sessionId,
+            rating: rating,
+            content: content,
+            mood: mood,
+            createdAt: createdAt,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String id,
+            required String userId,
+            required String sessionId,
+            Value<int> rating = const Value.absent(),
+            required String content,
+            Value<String?> mood = const Value.absent(),
+            required DateTime createdAt,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              JournalEntriesCompanion.insert(
+            id: id,
+            userId: userId,
+            sessionId: sessionId,
+            rating: rating,
+            content: content,
+            mood: mood,
+            createdAt: createdAt,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$JournalEntriesTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $JournalEntriesTable,
+    JournalEntry,
+    $$JournalEntriesTableFilterComposer,
+    $$JournalEntriesTableOrderingComposer,
+    $$JournalEntriesTableAnnotationComposer,
+    $$JournalEntriesTableCreateCompanionBuilder,
+    $$JournalEntriesTableUpdateCompanionBuilder,
+    (
+      JournalEntry,
+      BaseReferences<_$AppDatabase, $JournalEntriesTable, JournalEntry>
+    ),
+    JournalEntry,
+    PrefetchHooks Function()>;
 typedef $$BlacklistEntryTableCreateCompanionBuilder = BlacklistEntryCompanion
     Function({
   required String packageName,
@@ -2843,6 +3427,8 @@ class $AppDatabaseManager {
       $$TreesTableTableManager(_db, _db.trees);
   $$AchievementsTableTableManager get achievements =>
       $$AchievementsTableTableManager(_db, _db.achievements);
+  $$JournalEntriesTableTableManager get journalEntries =>
+      $$JournalEntriesTableTableManager(_db, _db.journalEntries);
   $$BlacklistEntryTableTableManager get blacklistEntry =>
       $$BlacklistEntryTableTableManager(_db, _db.blacklistEntry);
 }

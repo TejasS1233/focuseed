@@ -15,11 +15,25 @@ class PermissionCheckDialog {
       context: context,
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
-        title: const Text('Hard Lock Requires Permissions'),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: AppColors.error.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(AppRadius.md),
+              ),
+              child: const Icon(Icons.shield_outlined, color: AppColors.error, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(child: Text('Permissions Required', style: AppTypography.heading2)),
+          ],
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const SizedBox(height: 8),
             if (!overlayOk) ...[
               _PermissionItem(
                 icon: Icons.picture_in_picture,
@@ -38,20 +52,44 @@ class PermissionCheckDialog {
               ),
               const SizedBox(height: 12),
             ],
-            const Text(
-              'Without these permissions, hard lock will fall back to grayscale mode.',
-              style: TextStyle(fontSize: 13, color: Colors.grey),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: context.surface,
+                borderRadius: BorderRadius.circular(AppRadius.md),
+                border: Border.all(color: context.border, width: 0.5),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.info_outline, size: 16, color: context.textMuted),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Without these permissions, hard lock will fall back to grayscale mode.',
+                      style: AppTypography.bodySmall.copyWith(color: context.textMuted),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Start Anyway'),
+            child: Text('Start Anyway',
+              style: AppTypography.bodySmall.copyWith(color: context.textMuted)),
           ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
+          SizedBox(
+            child: ElevatedButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: context.surface,
+                foregroundColor: context.textPrimary,
+                side: BorderSide(color: context.border),
+              ),
+              child: const Text('Cancel'),
+            ),
           ),
         ],
       ),
@@ -71,24 +109,40 @@ class _PermissionItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon, color: UIColors.error),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
-              Text(desc, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-            ],
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: context.surface,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        border: Border.all(color: context.border, width: 0.5),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppColors.error.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(AppRadius.sm),
+            ),
+            child: Icon(icon, color: AppColors.error, size: 18),
           ),
-        ),
-        TextButton(
-          onPressed: onGrant,
-          child: const Text('Grant', style: TextStyle(fontSize: 12)),
-        ),
-      ],
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: AppTypography.heading3),
+                const SizedBox(height: 2),
+                Text(desc, style: AppTypography.bodySmall.copyWith(color: context.textMuted)),
+              ],
+            ),
+          ),
+          TextButton(
+            onPressed: onGrant,
+            child: Text('Grant', style: AppTypography.bodySmall.copyWith(color: AppColors.primary)),
+          ),
+        ],
+      ),
     );
   }
 }

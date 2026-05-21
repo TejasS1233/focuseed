@@ -100,6 +100,10 @@ class MainActivity : FlutterActivity() {
                         suppressNotifications(true)
                         enableImmersiveMode()
                         startForegroundService()
+                        FocusAccessibilityService.instance?.apply {
+                            setBlacklistedPackages(currentBlacklist)
+                            activate()
+                        }
                     }
 
                     result.success(true)
@@ -112,6 +116,7 @@ class MainActivity : FlutterActivity() {
                     disableImmersiveMode()
                     stopForegroundService()
                     overlayManager?.hide()
+                    FocusAccessibilityService.instance?.deactivate()
                     isHardLock = false
                     result.success(true)
                 }

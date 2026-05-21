@@ -61,6 +61,19 @@ class Achievements extends Table {
   Set<Column> get primaryKey => {id};
 }
 
+class JournalEntries extends Table {
+  TextColumn get id => text()();
+  TextColumn get userId => text()();
+  TextColumn get sessionId => text()();
+  IntColumn get rating => integer().withDefault(const Constant(3))();
+  TextColumn get content => text()();
+  TextColumn get mood => text().nullable()();
+  DateTimeColumn get createdAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
 class BlacklistEntry extends Table {
   TextColumn get packageName => text()();
 
@@ -69,13 +82,23 @@ class BlacklistEntry extends Table {
 }
 
 @DriftDatabase(
-  tables: [Users, Sessions, Trees, Achievements, BlacklistEntry],
+  tables: [Users, Sessions, Trees, Achievements, JournalEntries, BlacklistEntry],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    onCreate: (m) => m.createAll(),
+    onUpgrade: (m, from, to) async {
+      if (from < 2) {
+        await m.createTable(journalEntries);
+      }
+    },
+  );
 
   Future<Session?> getSessionById(String id) {
     return (select(sessions)..where((s) => s.id.equals(id))).getSingleOrNull();

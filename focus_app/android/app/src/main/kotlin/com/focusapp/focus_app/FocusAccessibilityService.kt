@@ -5,6 +5,10 @@ import android.content.Intent
 import android.view.accessibility.AccessibilityEvent
 
 class FocusAccessibilityService : AccessibilityService() {
+    companion object {
+        var instance: FocusAccessibilityService? = null
+    }
+
     private var blacklistedPackages: Set<String> = emptySet()
     private var isActive = false
 
@@ -41,5 +45,11 @@ class FocusAccessibilityService : AccessibilityService() {
 
     override fun onServiceConnected() {
         super.onServiceConnected()
+        instance = this
+    }
+
+    override fun onDestroy() {
+        instance = null
+        super.onDestroy()
     }
 }

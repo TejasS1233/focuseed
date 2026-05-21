@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../state/session_state.dart';
 import '../state/blacklist_state.dart';
@@ -34,6 +35,7 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
   }
 
   Future<void> _start() async {
+    HapticFeedback.mediumImpact();
     _intention = _intentionController.text.trim();
     if (_intention!.isEmpty) _intention = null;
 
@@ -62,52 +64,65 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('New Session')),
-      body: Padding(
-        padding: const EdgeInsets.all(UISpacing.md),
+      appBar: AppBar(
+        title: Text('New Session', style: AppTypography.display2.copyWith(fontSize: 22)),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Mode', style: UITypography.heading3),
-            const SizedBox(height: UISpacing.sm),
+            Text('Choose Mode', style: AppTypography.heading2),
+            const SizedBox(height: 12),
             Row(
               children: [
-                Expanded(
-                  child: _ModeButton(
-                    label: 'Soft Focus',
-                    icon: Icons.blur_on,
-                    desc: 'Can stop anytime',
-                    selected: _mode == 'soft',
-                    onTap: () => setState(() => _mode = 'soft'),
-                  ),
-                ),
-                const SizedBox(width: UISpacing.sm),
-                Expanded(
-                  child: _ModeButton(
-                    label: 'Hard Lock',
-                    icon: Icons.lock,
-                    desc: 'Cannot stop early',
-                    selected: _mode == 'hard',
-                    onTap: () => setState(() => _mode = 'hard'),
-                  ),
-                ),
+                Expanded(child: _ModeCard(
+                  label: 'Soft Focus',
+                  icon: Icons.blur_on,
+                  desc: 'Flexible • Can stop anytime',
+                  selected: _mode == 'soft',
+                  color: AppColors.primary,
+                  onTap: () => setState(() => _mode = 'soft'),
+                )),
+                const SizedBox(width: 12),
+                Expanded(child: _ModeCard(
+                  label: 'Hard Lock',
+                  icon: Icons.lock,
+                  desc: 'Commit • Cannot stop early',
+                  selected: _mode == 'hard',
+                  color: AppColors.error,
+                  onTap: () => setState(() => _mode = 'hard'),
+                )),
               ],
             ),
-            const SizedBox(height: UISpacing.lg),
-            Text('Intention', style: UITypography.heading3),
-            const SizedBox(height: UISpacing.sm),
+            const SizedBox(height: 28),
+            Text('Set Intention', style: AppTypography.heading2),
+            const SizedBox(height: 12),
             TextField(
               controller: _intentionController,
               decoration: InputDecoration(
                 hintText: 'What do you want to focus on?',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(UIRadius.md),
-                ),
+                prefixIcon: Icon(Icons.edit_outlined, size: 18, color: context.textMuted),
               ),
             ),
-            const SizedBox(height: UISpacing.lg),
-            Text('Duration: $_durationMinutes min',
-              style: UITypography.heading3),
+            const SizedBox(height: 28),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Duration', style: AppTypography.heading2),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(AppRadius.full),
+                    border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+                  ),
+                  child: Text('$_durationMinutes min',
+                    style: AppTypography.label.copyWith(color: AppColors.primary)),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
             Slider(
               value: _durationMinutes.toDouble(),
               min: 5,
@@ -116,31 +131,57 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
               label: '$_durationMinutes min',
               onChanged: (v) => setState(() => _durationMinutes = v.round()),
             ),
-            const SizedBox(height: UISpacing.lg),
-            Text('Ambient Sound', style: UITypography.heading3),
-            const SizedBox(height: UISpacing.sm),
+            const SizedBox(height: 28),
+            Text('Ambient Sound', style: AppTypography.heading2),
+            const SizedBox(height: 12),
             Wrap(
               spacing: 8,
+              runSpacing: 8,
               children: _soundOptions.map((opt) {
-                return ChoiceChip(
-                  label: Text(opt.$1),
-                  selected: _ambientSound == opt.$2,
-                  onSelected: (_) => setState(() => _ambientSound = opt.$2),
+                final selected = _ambientSound == opt.$2;
+                return GestureDetector(
+                  onTap: () => setState(() => _ambientSound = opt.$2),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: selected ? AppColors.primary.withOpacity(0.12) : context.surface,
+                      borderRadius: BorderRadius.circular(AppRadius.full),
+                      border: Border.all(
+                        color: selected ? AppColors.primary : context.border,
+                        width: selected ? 1 : 0.5,
+                      ),
+                    ),
+                    child: Text(
+                      opt.$1,
+                      style: AppTypography.bodySmall.copyWith(
+                        color: selected ? AppColors.primary : context.textSecondary,
+                        fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                      ),
+                    ),
+                  ),
                 );
               }).toList(),
             ),
-            const Spacer(),
+            const SizedBox(height: 40),
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _start,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: UIColors.primary,
-                  foregroundColor: UIColors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                  boxShadow: AppShadows.glow(AppColors.primary, intensity: 0.4),
                 ),
-                child: const Text('Begin Session',
-                  style: UITypography.body),
+                child: ElevatedButton(
+                  onPressed: _start,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(_mode == 'hard' ? Icons.lock : Icons.blur_on, size: 18),
+                      const SizedBox(width: 8),
+                      Text(_mode == 'hard' ? 'Lock In' : 'Begin Focus'),
+                    ],
+                  ),
+                ),
               ),
             ),
           ],
@@ -150,46 +191,49 @@ class _SessionSetupScreenState extends ConsumerState<SessionSetupScreen> {
   }
 }
 
-class _ModeButton extends StatelessWidget {
+class _ModeCard extends StatelessWidget {
   final String label, desc;
   final IconData icon;
   final bool selected;
+  final Color color;
   final VoidCallback onTap;
 
-  const _ModeButton({
+  const _ModeCard({
     required this.label, required this.desc, required this.icon,
-    required this.selected, required this.onTap,
+    required this.selected, required this.color, required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(UISpacing.md),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: selected ? cs.primary : cs.surface,
-          borderRadius: BorderRadius.circular(UIRadius.md),
+          color: selected
+              ? color.withOpacity(0.08)
+              : context.surfaceElevated.withOpacity(0.2),
+          borderRadius: BorderRadius.circular(AppRadius.lg),
           border: Border.all(
-            color: selected ? cs.primary : cs.outline,
+            color: selected ? color : context.border,
+            width: selected ? 1 : 0.5,
           ),
+          boxShadow: selected
+              ? [BoxShadow(color: color.withOpacity(0.1), blurRadius: 12)]
+              : null,
         ),
         child: Column(
           children: [
-            Icon(icon,
-              color: selected ? cs.onPrimary : cs.primary),
+            Icon(icon, color: selected ? color : context.textMuted, size: 28),
+            const SizedBox(height: 8),
+            Text(label, style: AppTypography.heading3.copyWith(
+              color: selected ? context.textPrimary : context.textSecondary,
+            )),
             const SizedBox(height: 4),
-            Text(label,
-              style: TextStyle(
-                color: selected ? cs.onPrimary : cs.onSurface,
-                fontWeight: FontWeight.w600,
-              )),
-            Text(desc,
-              style: TextStyle(
-                fontSize: 12,
-                color: selected ? cs.onPrimary : cs.onSurfaceVariant,
-              )),
+            Text(desc, style: AppTypography.caption.copyWith(
+              color: selected ? context.textSecondary : context.textMuted,
+            )),
           ],
         ),
       ),

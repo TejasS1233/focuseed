@@ -102,7 +102,8 @@ class SessionNotifier extends Notifier<SessionState> {
   }
 
   void resumeSession() {
-    _startSeconds = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    final pausedElapsed = state.elapsedSeconds;
+    _startSeconds = (DateTime.now().millisecondsSinceEpoch ~/ 1000) - pausedElapsed;
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       state = state.copyWith(elapsedSeconds: now - _startSeconds);
@@ -184,7 +185,9 @@ class SessionNotifier extends Notifier<SessionState> {
     if (state.status != SessionStatus.running) return;
     if (lifecycleState == AppLifecycleState.paused) {
       if (state.mode == 'hard') {
-        endSession(completed: false);
+        _timer?.cancel();
+        _audio.pause();
+        state = state.copyWith(status: SessionStatus.paused);
       } else {
         _timer?.cancel();
       }

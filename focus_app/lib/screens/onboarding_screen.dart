@@ -35,48 +35,71 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(UISpacing.lg),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.psychology, size: 80, color: UIColors.primary),
-              const SizedBox(height: UISpacing.lg),
-              Text('Welcome to Focus Garden',
-                style: UITypography.heading1),
-              const SizedBox(height: UISpacing.sm),
-              Text(
-                'Grow your focus, one session at a time.',
-                style: UITypography.body.copyWith(color: UIColors.gray500),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: UISpacing.xl),
-              TextField(
-                controller: _controller,
-                decoration: InputDecoration(
-                  labelText: 'Your name (optional)',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(UIRadius.md),
+      body: Container(
+        decoration: context.gradientBg,
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              children: [
+                const Spacer(),
+                // Icon
+                Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(30),
+                    border: Border.all(color: AppColors.primary.withOpacity(0.2), width: 1),
+                    boxShadow: AppShadows.glow(AppColors.primary, intensity: 0.4),
+                  ),
+                  child: const Center(
+                    child: Text('🌱', style: TextStyle(fontSize: 44)),
                   ),
                 ),
-              ),
-              const SizedBox(height: UISpacing.lg),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _complete,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: UIColors.primary,
-                    foregroundColor: UIColors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
-                  child: Text('Start Growing',
-                    style: UITypography.body.copyWith(
-                      fontWeight: FontWeight.w600)),
+                const SizedBox(height: 32),
+                // Title
+                Text('Focus Garden', style: AppTypography.display1),
+                const SizedBox(height: 12),
+                Text(
+                  'Grow your focus, one session at a time.',
+                  style: AppTypography.body.copyWith(color: context.textMuted),
+                  textAlign: TextAlign.center,
                 ),
-              ),
-            ],
+                const SizedBox(height: 48),
+                // Name input
+                TextField(
+                  controller: _controller,
+                  decoration: InputDecoration(
+                    hintText: 'Enter your name (optional)',
+                    prefixIcon: Icon(Icons.person_outline, size: 18, color: context.textMuted),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                // CTA
+                SizedBox(
+                  width: double.infinity,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(AppRadius.md),
+                      boxShadow: AppShadows.glow(AppColors.primary, intensity: 0.5),
+                    ),
+                    child: ElevatedButton(
+                      onPressed: _complete,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text('Start Growing'),
+                          const SizedBox(width: 8),
+                          const Icon(Icons.arrow_forward_rounded, size: 20),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const Spacer(flex: 2),
+              ],
+            ),
           ),
         ),
       ),
@@ -120,38 +143,64 @@ class _SetupBlacklistScreenState extends ConsumerState<_SetupBlacklistScreen> {
     final blockedCount = blacklist.blacklistedPackages.length;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Block Distractions')),
+      appBar: AppBar(
+        title: Text('Block Distractions', style: AppTypography.display2.copyWith(fontSize: 22)),
+      ),
       body: _loadingApps
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
           : Column(
               children: [
                 Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
                   child: Text(
                     'Block apps that distract you during hard lock sessions.',
-                    style: UITypography.body.copyWith(color: UIColors.gray500),
+                    style: AppTypography.body.copyWith(color: context.textMuted),
                     textAlign: TextAlign.center,
                   ),
                 ),
                 Expanded(
                   child: ListView.separated(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
                     itemCount: _allApps.length,
-                    separatorBuilder: (_, __) => const Divider(height: 1),
+                    separatorBuilder: (_, __) => const SizedBox(height: 6),
                     itemBuilder: (_, i) {
                       final app = _allApps[i];
                       final pkg = app['packageName']!;
                       final name = app['name']!;
                       final blocked = blacklist.blacklistedPackages.contains(pkg);
-                      return ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: blocked ? Colors.red.withOpacity(0.1) : Colors.grey.withOpacity(0.1),
-                          child: Text(name[0].toUpperCase(),
-                            style: TextStyle(color: blocked ? Colors.red : Colors.grey)),
+                      return Container(
+                        decoration: BoxDecoration(
+                          color: context.surfaceElevated.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(AppRadius.md),
+                          border: Border.all(
+                            color: blocked ? AppColors.error.withOpacity(0.2) : context.border,
+                            width: 0.5,
+                          ),
                         ),
-                        title: Text(name),
-                        trailing: Switch(
-                          value: blocked,
-                          onChanged: (_) => ref.read(blacklistProvider.notifier).togglePackage(pkg),
+                        child: ListTile(
+                          leading: Container(
+                            width: 40, height: 40,
+                            decoration: BoxDecoration(
+                              color: blocked
+                                  ? AppColors.error.withOpacity(0.1)
+                                  : context.surface,
+                              borderRadius: BorderRadius.circular(AppRadius.md),
+                            ),
+                            child: Center(
+                              child: Text(name[0].toUpperCase(),
+                                style: AppTypography.heading3.copyWith(
+                                  color: blocked ? AppColors.error : context.textMuted,
+                                  fontSize: 16,
+                                )),
+                            ),
+                          ),
+                          title: Text(name, style: AppTypography.body),
+                          subtitle: Text(pkg, style: AppTypography.caption.copyWith(color: context.textMuted)),
+                          trailing: Switch(
+                            value: blocked,
+                            activeColor: AppColors.error,
+                            onChanged: (_) => ref.read(blacklistProvider.notifier).togglePackage(pkg),
+                          ),
                         ),
                       );
                     },
@@ -159,16 +208,11 @@ class _SetupBlacklistScreenState extends ConsumerState<_SetupBlacklistScreen> {
                 ),
                 SafeArea(
                   child: Padding(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(20),
                     child: SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: () => Navigator.popUntil(context, (r) => r.isFirst),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: UIColors.primary,
-                          foregroundColor: UIColors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                        ),
                         child: Text(blockedCount > 0
                             ? 'Lock In ($blockedCount blocked)'
                             : 'Skip, I\'ll manage later'),
@@ -178,6 +222,6 @@ class _SetupBlacklistScreenState extends ConsumerState<_SetupBlacklistScreen> {
                 ),
               ],
             ),
-    );
+          );
   }
 }

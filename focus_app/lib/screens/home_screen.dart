@@ -6,96 +6,256 @@ import '../state/garden_state.dart';
 import '../theme/theme.dart';
 import 'session_setup_screen.dart';
 
-class HomeScreen extends ConsumerWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() {});
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final user = ref.watch(userProvider);
     final garden = ref.watch(gardenProvider);
     final session = ref.watch(sessionProvider);
 
     final aliveTrees = garden.trees.where((t) => t.isAlive).length;
     final totalTrees = garden.trees.length;
+    final completedSessions = session.status == SessionStatus.completed ? 1 : 0;
 
     return Scaffold(
-      appBar: AppBar(title: Text('Focus Garden')),
-      body: Padding(
-        padding: const EdgeInsets.all(UISpacing.md),
+      appBar: AppBar(
+        title: Text(
+          user != null ? 'Hey, $user' : 'Focus Garden',
+          style: AppTypography.display2.copyWith(fontSize: 24),
+        ),
+        actions: [
+          Container(
+            margin: const EdgeInsets.only(right: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(AppRadius.full),
+              border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.local_fire_department, size: 14, color: AppColors.secondary),
+                const SizedBox(width: 4),
+                Text('0', style: AppTypography.label.copyWith(color: AppColors.secondary)),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 100),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Welcome${user != null ? ", $user" : ""}',
-              style: UITypography.heading2),
-            const SizedBox(height: UISpacing.md),
-            Row(
-              children: [
-                _StatCard(
-                  icon: Icons.timer,
-                  label: 'Sessions',
-                  value: '${session.status == SessionStatus.completed ? 1 : 0}',
-                ),
-                const SizedBox(width: UISpacing.sm),
-                _StatCard(
-                  icon: Icons.eco,
-                  label: 'Trees',
-                  value: '$aliveTrees/$totalTrees',
-                ),
-                const SizedBox(width: UISpacing.sm),
-                _StatCard(
-                  icon: Icons.local_fire_department,
-                  label: 'Streak',
-                  value: '0',
-                ),
-              ],
-            ),
-            const SizedBox(height: UISpacing.lg),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(
-                    builder: (_) => const SessionSetupScreen(),
-                  ));
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: UIColors.primary,
-                  foregroundColor: UIColors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 20),
-                ),
-                child: Text('Start Focus Session',
-                  style: UITypography.heading3),
-              ),
-            ),
-            const SizedBox(height: UISpacing.lg),
-            Text('Your Garden', style: UITypography.heading3),
-            const SizedBox(height: UISpacing.sm),
-            if (garden.isLoading)
-              const Center(child: CircularProgressIndicator())
-            else if (garden.trees.isEmpty)
-              Expanded(
-                child: Center(
-                  child: Text('Complete a session to plant your first tree!',
-                    style: UITypography.body.copyWith(color: UIColors.gray500),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              )
-            else
-              Expanded(
-                child: GridView.builder(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3, crossAxisSpacing: 8, mainAxisSpacing: 8),
-                  itemCount: garden.trees.length > 9 ? 9 : garden.trees.length,
-                  itemBuilder: (_, i) {
-                    final tree = garden.trees[i];
-                    return _TreeTile(tree: tree);
-                  },
+            _AnimatedEntry(
+              delay: 0,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(24),
+                decoration: AppEffects.glassCard(accentColor: AppColors.primaryGlow, radius: AppRadius.xl),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withOpacity(0.12),
+                            borderRadius: BorderRadius.circular(AppRadius.md),
+                          ),
+                          child: const Icon(Icons.radar, color: AppColors.primary, size: 20),
+                        ),
+                        const Spacer(),
+                        Text('SOFT FOCUS', style: AppTypography.label.copyWith(color: AppColors.primary, letterSpacing: 1.5)),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    Text('Ready to grow?', style: AppTypography.display2),
+                    const SizedBox(height: 8),
+                    Text('Start a session and watch your garden thrive',
+                      style: AppTypography.body.copyWith(color: context.textMuted)),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(AppRadius.md),
+                          boxShadow: AppShadows.glow(AppColors.primary, intensity: 0.6),
+                        ),
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(context, MaterialPageRoute(
+                              builder: (_) => const SessionSetupScreen(),
+                            ));
+                          },
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.play_arrow_rounded, size: 22),
+                              const SizedBox(width: 8),
+                              const Text('Start Focus Session'),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
+            ),
+            const SizedBox(height: 24),
+            _AnimatedEntry(
+              delay: 1,
+              child: Text('Today\'s Stats', style: AppTypography.heading1),
+            ),
+            const SizedBox(height: 12),
+            _AnimatedEntry(
+              delay: 1,
+              child: Row(
+                children: [
+                  Expanded(child: _StatCard(
+                    icon: Icons.timer_outlined,
+                    label: 'Focused',
+                    value: '${session.elapsedSeconds ~/ 60}m',
+                    color: AppColors.primary,
+                  )),
+                  const SizedBox(width: 10),
+                  Expanded(child: _StatCard(
+                    icon: Icons.eco_outlined,
+                    label: 'Trees',
+                    value: '$aliveTrees/$totalTrees',
+                    color: AppColors.tertiary,
+                  )),
+                  const SizedBox(width: 10),
+                  Expanded(child: _StatCard(
+                    icon: Icons.check_circle_outline,
+                    label: 'Sessions',
+                    value: '$completedSessions',
+                    color: AppColors.secondary,
+                  )),
+                ],
+              ),
+            ),
+            const SizedBox(height: 28),
+            _AnimatedEntry(
+              delay: 2,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Your Garden', style: AppTypography.heading1),
+                  if (garden.trees.isNotEmpty)
+                    Text('See all', style: AppTypography.bodySmall.copyWith(color: AppColors.primary)),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            _AnimatedEntry(
+              delay: 2,
+              child: garden.isLoading
+                  ? const SizedBox(
+                      height: 120,
+                      child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                    )
+                  : garden.trees.isEmpty
+                      ? Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(24),
+                          decoration: AppEffects.glass(radius: AppRadius.lg),
+                          child: Column(
+                            children: [
+                              Text('🌱', style: const TextStyle(fontSize: 40)),
+                              const SizedBox(height: 8),
+                              Text('Your garden awaits', style: AppTypography.heading2),
+                              const SizedBox(height: 4),
+                              Text('Complete a session to plant your first seed',
+                                style: AppTypography.bodySmall.copyWith(color: context.textMuted)),
+                            ],
+                          ),
+                        )
+                      : SizedBox(
+                          height: 130,
+                          child: ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: garden.trees.length > 5 ? 5 : garden.trees.length,
+                            separatorBuilder: (_, __) => const SizedBox(width: 10),
+                            itemBuilder: (_, i) {
+                              final tree = garden.trees[i];
+                              return _GardenPreviewTile(tree: tree);
+                            },
+                          ),
+                        ),
+            ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _AnimatedEntry extends StatefulWidget {
+  final Widget child;
+  final int delay;
+
+  const _AnimatedEntry({required this.child, required this.delay});
+
+  @override
+  State<_AnimatedEntry> createState() => _AnimatedEntryState();
+}
+
+class _AnimatedEntryState extends State<_AnimatedEntry> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _opacity;
+  late Animation<Offset> _slide;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+    _opacity = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
+    );
+    _slide = Tween<Offset>(
+      begin: const Offset(0, 20),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
+
+    Future.delayed(Duration(milliseconds: 100 + widget.delay * 120), () {
+      if (mounted) _controller.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _opacity,
+      child: SlideTransition(position: _slide, child: widget.child),
     );
   }
 }
@@ -104,55 +264,86 @@ class _StatCard extends StatelessWidget {
   final IconData icon;
   final String label;
   final String value;
+  final Color color;
 
-  const _StatCard({required this.icon, required this.label, required this.value});
+  const _StatCard({
+    required this.icon, required this.label, required this.value, required this.color,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(UISpacing.md),
-        decoration: BoxDecoration(
-          color: cs.surface,
-          borderRadius: BorderRadius.circular(UIRadius.md),
-          border: Border.all(color: cs.outlineVariant),
-        ),
-        child: Column(
-          children: [
-            Icon(icon, color: cs.primary),
-            const SizedBox(height: 4),
-            Text(value, style: UITypography.heading2),
-            Text(label, style: UITypography.caption),
-          ],
-        ),
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: context.surfaceElevated.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: color.withOpacity(0.15), width: 0.5),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 22),
+          const SizedBox(height: 8),
+          Text(value, style: AppTypography.heading1.copyWith(fontSize: 20, color: context.textPrimary)),
+          const SizedBox(height: 2),
+          Text(label, style: AppTypography.caption.copyWith(color: context.textMuted)),
+        ],
       ),
     );
   }
 }
 
-class _TreeTile extends StatelessWidget {
+class _GardenPreviewTile extends StatelessWidget {
   final dynamic tree;
 
-  const _TreeTile({required this.tree});
+  const _GardenPreviewTile({required this.tree});
+
+  String _emoji() {
+    if (!tree.isAlive) return '🪦';
+    switch (tree.species) {
+      case 'oak': return '🌳';
+      case 'pine': return '🌲';
+      case 'cherry': return '🌸';
+      default: return '🌱';
+    }
+  }
+
+  Color _color(BuildContext context) {
+    if (!tree.isAlive) return AppColors.textMuted;
+    switch (tree.species) {
+      case 'oak': return const Color(0xFF00CC6A);
+      case 'pine': return const Color(0xFF3B82F6);
+      case 'cherry': return const Color(0xFFFF4D6D);
+      default: return AppColors.primary;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final stage = tree.growthStage;
-    final alive = tree.isAlive;
-    final cs = Theme.of(context).colorScheme;
+    final c = _color(context);
     return Container(
+      width: 100,
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: alive ? cs.surface : cs.surfaceVariant,
-        borderRadius: BorderRadius.circular(UIRadius.md),
-        border: Border.all(color: alive ? cs.outlineVariant : cs.outline),
+        color: context.surfaceElevated.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: c.withOpacity(0.15), width: 0.5),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(alive ? '🌱' : '🪦', style: const TextStyle(fontSize: 28)),
-          Text('Stage $stage',
-            style: UITypography.caption),
+          Text(_emoji(), style: const TextStyle(fontSize: 32)),
+          const SizedBox(height: 6),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
+              color: c.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text('Stage ${tree.growthStage}',
+              style: AppTypography.caption.copyWith(color: c, fontSize: 10)),
+          ),
+          if (!tree.isAlive)
+            Text('Wilted', style: AppTypography.caption.copyWith(color: context.textMuted, fontSize: 10)),
         ],
       ),
     );

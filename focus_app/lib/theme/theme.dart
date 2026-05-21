@@ -1,458 +1,251 @@
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
-/// Custom color palette for the UI library
-/// Default theme: Monochrome black (shadcn-style)
-class UIColors {
-  // Primary colors - Monochrome black
-  static const Color primary = Color(0xFF18181B);
-  static const Color primaryDark = Color(0xFF09090B);
-  static const Color primaryLight = Color(0xFF27272A);
+class AppColors {
+  AppColors._();
 
-  // Secondary colors - Zinc gray
-  static const Color secondary = Color(0xFFF4F4F5);
-  static const Color secondaryDark = Color(0xFFE4E4E7);
-  static const Color secondaryLight = Color(0xFFFAFAFA);
+  static const Color deepBg = Color(0xFF08080F);
+  static const Color surface = Color(0xFF0D0D1A);
+  static const Color surfaceElevated = Color(0xFF151528);
+  static const Color surfaceHighlight = Color(0xFF1F1F3A);
 
-  // Neutral colors
+  static const Color primary = Color(0xFF00FF88);
+  static const Color primaryDark = Color(0xFF00CC6A);
+  static const Color primaryGlow = Color(0x3300FF88);
+
+  static const Color secondary = Color(0xFFFFB347);
+  static const Color tertiary = Color(0xFF7C3AED);
+  static const Color error = Color(0xFFFF4D6D);
+
+  static const Color textPrimary = Color(0xFFE5E7EB);
+  static const Color textSecondary = Color(0xFF9CA3AF);
+  static const Color textMuted = Color(0xFF6B7280);
+
+  static const Color border = Color(0xFF2A2A45);
+  static const Color borderFocused = Color(0xFF00FF88);
+
   static const Color white = Color(0xFFFFFFFF);
   static const Color black = Color(0xFF000000);
-  static const Color gray50 = Color(0xFFFAFAFA);
-  static const Color gray100 = Color(0xFFF4F4F5);
-  static const Color gray200 = Color(0xFFE4E4E7);
-  static const Color gray300 = Color(0xFFD4D4D8);
-  static const Color gray400 = Color(0xFFA1A1AA);
-  static const Color gray500 = Color(0xFF71717A);
-  static const Color gray600 = Color(0xFF52525B);
-  static const Color gray700 = Color(0xFF3F3F46);
-  static const Color gray800 = Color(0xFF27272A);
-  static const Color gray900 = Color(0xFF18181B);
 
-  // Semantic colors
-  static const Color success = Color(0xFF22C55E);
-  static const Color successForeground = Color(0xFFFAFAFA);
-
-  static const Color warning = Color(0xFFF59E0B);
-  static const Color warningForeground = Color(0xFF18181B);
-
-  static const Color error = Color(0xFFEF4444);
-  static const Color errorForeground = Color(0xFFFAFAFA);
-
-  static const Color destructive = Color(0xFFDC2626);
-  static const Color destructiveForeground = Color(0xFFFAFAFA);
-
-  static const Color info = Color(0xFF3B82F6);
-  static const Color infoForeground = Color(0xFFFAFAFA);
-
-  // shadcn-style colors - Zinc palette
-  static const Color background = Color(0xFFFFFFFF);
-  static const Color foreground = Color(0xFF09090B);
-  static const Color muted = Color(0xFFF4F4F5);
-  static const Color mutedForeground = Color(0xFF71717A);
-  static const Color border = Color(0xFFE4E4E7);
-  static const Color input = Color(0xFFE4E4E7);
-  static const Color ring = Color(0xFF18181B);
-
-  static const Color primaryForeground = Color(0xFFFAFAFA);
-  static const Color secondaryForeground = Color(0xFF18181B);
+  static const Color success = Color(0xFF00FF88);
+  static const Color warning = Color(0xFFFFB347);
+  static const Color destructive = Color(0xFFFF4D6D);
 }
 
-/// Typography constants for the UI library
-class UITypography {
-  // Font sizes
-  static const double fontSizeXS = 12.0;
-  static const double fontSizeSM = 14.0;
-  static const double fontSizeBase = 16.0;
-  static const double fontSizeLG = 18.0;
-  static const double fontSizeXL = 20.0;
-  static const double fontSize2XL = 24.0;
-  static const double fontSize3XL = 30.0;
-  static const double fontSize4XL = 36.0;
+class AppTypography {
+  AppTypography._();
 
-  // Font weights
-  static const FontWeight fontWeightLight = FontWeight.w300;
-  static const FontWeight fontWeightNormal = FontWeight.w400;
-  static const FontWeight fontWeightMedium = FontWeight.w500;
-  static const FontWeight fontWeightSemiBold = FontWeight.w600;
-  static const FontWeight fontWeightBold = FontWeight.w700;
+  static String get bodyFont => 'PlusJakartaSans';
 
-  // Text styles
-  static const TextStyle heading1 = TextStyle(
-    fontSize: fontSize4XL,
-    fontWeight: fontWeightBold,
+  static TextStyle get display1 => GoogleFonts.playfairDisplay(
+    fontSize: 34, fontWeight: FontWeight.w700, height: 1.2, letterSpacing: -0.5,
   );
 
-  static const TextStyle heading2 = TextStyle(
-    fontSize: fontSize3XL,
-    fontWeight: fontWeightBold,
+  static TextStyle get display2 => GoogleFonts.playfairDisplay(
+    fontSize: 28, fontWeight: FontWeight.w600, height: 1.25,
   );
 
-  static const TextStyle heading3 = TextStyle(
-    fontSize: fontSize2XL,
-    fontWeight: fontWeightSemiBold,
+  static TextStyle get heading1 => GoogleFonts.plusJakartaSans(
+    fontSize: 22, fontWeight: FontWeight.w700, height: 1.3,
   );
 
-  static const TextStyle bodyLarge = TextStyle(
-    fontSize: fontSizeLG,
-    fontWeight: fontWeightNormal,
+  static TextStyle get heading2 => GoogleFonts.plusJakartaSans(
+    fontSize: 18, fontWeight: FontWeight.w600, height: 1.4,
   );
 
-  static const TextStyle body = TextStyle(
-    fontSize: fontSizeBase,
-    fontWeight: fontWeightNormal,
+  static TextStyle get heading3 => GoogleFonts.plusJakartaSans(
+    fontSize: 15, fontWeight: FontWeight.w600, height: 1.4, letterSpacing: 0.3,
   );
 
-  static const TextStyle bodySmall = TextStyle(
-    fontSize: fontSizeSM,
-    fontWeight: fontWeightNormal,
+  static TextStyle get body => GoogleFonts.plusJakartaSans(
+    fontSize: 15, fontWeight: FontWeight.w400, height: 1.6,
   );
 
-  static const TextStyle caption = TextStyle(
-    fontSize: fontSizeXS,
-    fontWeight: fontWeightNormal,
+  static TextStyle get bodySmall => GoogleFonts.plusJakartaSans(
+    fontSize: 13, fontWeight: FontWeight.w400, height: 1.5,
+  );
+
+  static TextStyle get caption => GoogleFonts.plusJakartaSans(
+    fontSize: 11, fontWeight: FontWeight.w500, height: 1.3, letterSpacing: 0.5,
+  );
+
+  static TextStyle get label => GoogleFonts.plusJakartaSans(
+    fontSize: 12, fontWeight: FontWeight.w600, height: 1.2, letterSpacing: 0.8,
+  );
+
+  static TextStyle get timer => GoogleFonts.plusJakartaSans(
+    fontSize: 64, fontWeight: FontWeight.w200, height: 1.0, letterSpacing: -2,
   );
 }
 
-/// Border radius constants for the UI library
-class UIRadius {
-  static const double sm = 4.0;
-  static const double md = 8.0;
-  static const double lg = 12.0;
-  static const double xl = 16.0;
-  static const double xxl = 24.0;
-  static const double full = 9999.0;
+class AppRadius {
+  AppRadius._();
+  static const double sm = 6;
+  static const double md = 10;
+  static const double lg = 16;
+  static const double xl = 24;
+  static const double full = 9999;
 }
 
-/// Spacing constants for the UI library
-class UISpacing {
-  static const double xs = 4.0;
-  static const double sm = 8.0;
-  static const double md = 16.0;
-  static const double lg = 24.0;
-  static const double xl = 32.0;
-  static const double xxl = 48.0;
+class AppSpacing {
+  AppSpacing._();
+  static const double xs = 4;
+  static const double sm = 8;
+  static const double md = 16;
+  static const double lg = 24;
+  static const double xl = 32;
+  static const double xxl = 48;
+  static const double xxxl = 64;
 }
 
-/// Border width constants for the UI library
-class UIBorder {
-  static const double thin = 1.0;
-  static const double medium = 1.5;
-  static const double thick = 2.0;
+class AppShadows {
+  AppShadows._();
+  static List<BoxShadow> glow(Color color, {double intensity = 0.5}) => [
+    BoxShadow(
+      color: color.withOpacity(intensity * 0.3),
+      blurRadius: 12,
+      spreadRadius: -2,
+    ),
+    BoxShadow(
+      color: color.withOpacity(intensity * 0.15),
+      blurRadius: 24,
+      spreadRadius: 0,
+    ),
+  ];
+
+  static List<BoxShadow> card = [
+    BoxShadow(
+      color: Colors.black.withOpacity(0.4),
+      blurRadius: 8,
+      offset: const Offset(0, 4),
+    ),
+    BoxShadow(
+      color: AppColors.primaryGlow,
+      blurRadius: 1,
+      offset: const Offset(0, 0),
+    ),
+  ];
+
+  static List<BoxShadow> elevated = [
+    BoxShadow(
+      color: Colors.black.withOpacity(0.5),
+      blurRadius: 16,
+      offset: const Offset(0, 8),
+    ),
+  ];
 }
 
-/// Shadow constants for the UI library
-class UIShadows {
-  static const BoxShadow sm = BoxShadow(
-    color: Color(0x0D000000),
-    blurRadius: 2,
-    offset: Offset(0, 1),
-  );
+class AppColorsLight {
+  AppColorsLight._();
 
-  static const BoxShadow md = BoxShadow(
-    color: Color(0x1A000000),
-    blurRadius: 4,
-    offset: Offset(0, 2),
-  );
+  static const Color bg = Color(0xFFFAF8F5);
+  static const Color surface = Color(0xFFFFFFFF);
+  static const Color surfaceElevated = Color(0xFFF5F3F0);
+  static const Color surfaceHighlight = Color(0xFFEEECE8);
 
-  static const BoxShadow lg = BoxShadow(
-    color: Color(0x1A000000),
-    blurRadius: 8,
-    offset: Offset(0, 4),
-  );
+  static const Color textPrimary = Color(0xFF1A1A2E);
+  static const Color textSecondary = Color(0xFF6B7280);
+  static const Color textMuted = Color(0xFF9CA3AF);
 
-  static const BoxShadow xl = BoxShadow(
-    color: Color(0x1A000000),
-    blurRadius: 16,
-    offset: Offset(0, 8),
+  static const Color border = Color(0xFFE5E7EB);
+
+  static BoxDecoration gradientBg = const BoxDecoration(
+    gradient: LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [
+        Color(0xFFFAF8F5),
+        Color(0xFFF7F4EF),
+        Color(0xFFF5F2EC),
+      ],
+    ),
   );
 }
 
-class UIEffects {
-  UIEffects._();
+extension ThemeColorsX on BuildContext {
+  bool get isDark => Theme.of(this).brightness == Brightness.dark;
 
-  // Visual Effects Configuration
-  static const bool enableGlassmorphism = false;
-  static const double glassBlur = 10.0;
-  static const double glassOpacity = 0.2;
+  Color get textPrimary => isDark ? AppColors.textPrimary : AppColorsLight.textPrimary;
+  Color get textSecondary => isDark ? AppColors.textSecondary : AppColorsLight.textSecondary;
+  Color get textMuted => isDark ? AppColors.textMuted : AppColorsLight.textMuted;
+  Color get surfaceElevated => isDark ? AppColors.surfaceElevated : AppColorsLight.surfaceElevated;
+  Color get surfaceHighlight => isDark ? AppColors.surfaceHighlight : AppColorsLight.surfaceHighlight;
+  Color get border => isDark ? AppColors.border : AppColorsLight.border;
+  Color get surface => isDark ? AppColors.surface : AppColorsLight.surface;
+  Color get bg => isDark ? AppColors.deepBg : AppColorsLight.bg;
+  BoxDecoration get gradientBg => isDark ? AppEffects.gradientBg : AppColorsLight.gradientBg;
+}
 
-  static const bool enableNeumorphism = false;
-  static const double neumorphismIntensity = 0.5;
+class AppEffects {
+  AppEffects._();
 
-  static const bool enableGradients = false;
-  static const Color gradientStart = Color(0xFF6366F1);
-  static const Color gradientEnd = Color(0xFF8B5CF6);
-  static const double gradientAngle = 135.0;
-
-  static const bool enableBorderGlow = false;
-  static const Color glowColor = Color(0xFF6366F1);
-  static const double glowIntensity = 0.5;
-  static const double glowSpread = 4.0;
-
-  static const bool enableHoverAnimations = false;
-
-  // Additional Visual Effects
-  static const bool enableShimmer = false;
-  static const Color shimmerBaseColor = Color(0xFFE0E0E0);
-  static const Color shimmerHighlightColor = Color(0xFFF5F5F5);
-  static const double shimmerSpeed = 1.0;
-
-  static const bool enablePulse = false;
-  static const double pulseSpeed = 1.0;
-  static const double pulseScale = 1.05;
-
-  static const bool enableFloating = false;
-  static const double floatingDistance = 10.0;
-  static const double floatingSpeed = 1.0;
-
-  static const bool enableTiltHover = false;
-  static const double tiltIntensity = 0.05;
-
-  static const bool enableAnimatedGradient = false;
-  static const double gradientAnimationSpeed = 1.0;
-
-  // Neo-Brutalism style
-  static const double borderWidth = 1.0;
-  static const bool enableHardShadow = false;
-  static const double hardShadowOffsetX = 4.0;
-  static const double hardShadowOffsetY = 4.0;
-
-  /// Apply glassmorphism decoration to a container
-  static BoxDecoration glassDecoration({
-    required Color baseColor,
-    double blur = 10.0,
-    double opacity = 0.2,
-    double radiusScale = 1.0,
+  static BoxDecoration glass({
+    Color? bg,
+    double blur = 16,
+    double opacity = 0.15,
+    double radius = AppRadius.lg,
     Color? borderColor,
   }) {
     return BoxDecoration(
-      color: baseColor.withOpacity(opacity),
-      borderRadius: BorderRadius.circular(12 * radiusScale),
+      color: (bg ?? AppColors.surfaceElevated).withOpacity(opacity),
+      borderRadius: BorderRadius.circular(radius),
       border: Border.all(
-        color: (borderColor ?? UIColors.white).withOpacity(0.2),
-        width: UIBorder.medium,
+        color: (borderColor ?? AppColors.border).withOpacity(0.3),
+        width: 0.5,
       ),
     );
   }
 
-  /// Apply neumorphism decoration with soft shadows
-  static BoxDecoration neumorphismDecoration({
-    required Color baseColor,
-    double intensity = 0.5,
-    double radiusScale = 1.0,
-    bool isPressed = false,
+  static BoxDecoration glassCard({
+    Color? bg,
+    Color? accentColor,
+    double radius = AppRadius.lg,
   }) {
-    final isDark = baseColor.computeLuminance() < 0.5;
-    final lightColor = isDark
-        ? UIColors.white.withOpacity(0.1 * intensity)
-        : UIColors.white.withOpacity(0.7 * intensity);
-    final darkColor = isDark
-        ? UIColors.black.withOpacity(0.5 * intensity)
-        : UIColors.black.withOpacity(0.15 * intensity);
-
-    final offset = isPressed ? 2.0 : 4.0 * intensity;
-    final blur = isPressed ? 4.0 : 8.0 * intensity;
-
+    final accent = accentColor ?? AppColors.primaryGlow;
     return BoxDecoration(
-      color: baseColor,
-      borderRadius: BorderRadius.circular(12 * radiusScale),
+      color: (bg ?? AppColors.surfaceElevated).withOpacity(0.4),
+      borderRadius: BorderRadius.circular(radius),
+      border: Border.all(
+        color: accent,
+        width: 0.5,
+      ),
       boxShadow: [
         BoxShadow(
-          color: darkColor,
-          offset: Offset(offset, offset),
-          blurRadius: blur,
-        ),
-        BoxShadow(
-          color: lightColor,
-          offset: Offset(-offset, -offset),
-          blurRadius: blur,
+          color: accent,
+          blurRadius: 2,
+          spreadRadius: -1,
         ),
       ],
     );
   }
 
-  /// Create a gradient decoration
-  static BoxDecoration gradientDecoration({
-    required Color startColor,
-    required Color endColor,
-    double angle = 135.0,
-    double radiusScale = 1.0,
+  static BoxDecoration gradientBg = const BoxDecoration(
+    gradient: LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [
+        Color(0xFF08080F),
+        Color(0xFF0A0A1A),
+        Color(0xFF0C0C20),
+        Color(0xFF0D0D1A),
+      ],
+    ),
+  );
+
+  static BoxDecoration glowBorder({
+    Color color = AppColors.primary,
+    double radius = AppRadius.md,
   }) {
-    final angleRad = angle * (math.pi / 180);
     return BoxDecoration(
-      gradient: LinearGradient(
-        begin: Alignment(-math.cos(angleRad), -math.sin(angleRad)),
-        end: Alignment(math.cos(angleRad), math.sin(angleRad)),
-        colors: [startColor, endColor],
-      ),
-      borderRadius: BorderRadius.circular(12 * radiusScale),
-    );
-  }
-
-  /// Get glow shadows for border glow effect
-  static List<BoxShadow> glowShadows({
-    required Color color,
-    double intensity = 0.5,
-    double spread = 4.0,
-  }) {
-    return [
-      BoxShadow(
-        color: color.withOpacity(intensity),
-        blurRadius: spread * 2,
-        spreadRadius: spread / 2,
-      ),
-    ];
-  }
-}
-
-/// Neumorphic Container - A widget that applies neumorphism effect
-class NeumorphicContainer extends StatelessWidget {
-  final Widget child;
-  final EdgeInsetsGeometry? padding;
-  final BorderRadius? borderRadius;
-  final Color? backgroundColor;
-  final double intensity;
-  final bool isPressed;
-
-  const NeumorphicContainer({
-    super.key,
-    required this.child,
-    this.padding,
-    this.borderRadius,
-    this.backgroundColor,
-    this.intensity = 0.5,
-    this.isPressed = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final bgColor = backgroundColor ?? Theme.of(context).cardColor;
-
-    return Container(
-      padding: padding,
-      decoration: UIEffects.neumorphismDecoration(
-        baseColor: bgColor,
-        intensity: intensity,
-        radiusScale: 1.0,
-        isPressed: isPressed,
-      ).copyWith(borderRadius: borderRadius),
-      child: child,
-    );
-  }
-}
-
-/// Gradient Container - A widget that applies gradient effect
-class GradientContainer extends StatelessWidget {
-  final Widget child;
-  final EdgeInsetsGeometry? padding;
-  final BorderRadius? borderRadius;
-  final Color startColor;
-  final Color endColor;
-  final double angle;
-
-  const GradientContainer({
-    super.key,
-    required this.child,
-    required this.startColor,
-    required this.endColor,
-    this.padding,
-    this.borderRadius,
-    this.angle = 135.0,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: padding,
-      decoration: UIEffects.gradientDecoration(
-        startColor: startColor,
-        endColor: endColor,
-        angle: angle,
-      ).copyWith(borderRadius: borderRadius),
-      child: child,
-    );
-  }
-}
-
-/// Glow Container - A widget that applies border glow effect
-class GlowContainer extends StatelessWidget {
-  final Widget child;
-  final EdgeInsetsGeometry? padding;
-  final BorderRadius? borderRadius;
-  final Color? backgroundColor;
-  final Color glowColor;
-  final double intensity;
-  final double spread;
-
-  const GlowContainer({
-    super.key,
-    required this.child,
-    required this.glowColor,
-    this.padding,
-    this.borderRadius,
-    this.backgroundColor,
-    this.intensity = 0.5,
-    this.spread = 4.0,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final bgColor = backgroundColor ?? Theme.of(context).cardColor;
-    final radius = borderRadius ?? BorderRadius.circular(12);
-
-    return Container(
-      padding: padding,
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: radius,
-        boxShadow: UIEffects.glowShadows(
-          color: glowColor,
-          intensity: intensity,
-          spread: spread,
+      borderRadius: BorderRadius.circular(radius),
+      border: Border.all(color: color.withOpacity(0.4), width: 1),
+      boxShadow: [
+        BoxShadow(
+          color: color.withOpacity(0.2),
+          blurRadius: 8,
+          spreadRadius: 0,
         ),
-      ),
-      child: child,
-    );
-  }
-}
-
-/// Animated Hover Container - A widget with hover/tap scale animation
-class HoverScaleContainer extends StatefulWidget {
-  final Widget child;
-  final VoidCallback? onTap;
-  final double scale;
-  final Duration duration;
-
-  const HoverScaleContainer({
-    super.key,
-    required this.child,
-    this.onTap,
-    this.scale = 1.02,
-    this.duration = const Duration(milliseconds: 200),
-  });
-
-  @override
-  State<HoverScaleContainer> createState() => _HoverScaleContainerState();
-}
-
-class _HoverScaleContainerState extends State<HoverScaleContainer> {
-  bool _isHovered = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      child: GestureDetector(
-        onTap: widget.onTap,
-        child: AnimatedContainer(
-          duration: widget.duration,
-          transform: _isHovered
-              ? Matrix4.diagonal3Values(widget.scale, widget.scale, 1.0)
-              : Matrix4.identity(),
-          transformAlignment: Alignment.center,
-          child: widget.child,
-        ),
-      ),
+      ],
     );
   }
 }

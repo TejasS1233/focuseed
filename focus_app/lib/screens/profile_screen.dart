@@ -4,6 +4,7 @@ import '../state/app_state.dart';
 import '../state/session_state.dart';
 import '../theme/theme.dart';
 import 'blacklist_screen.dart';
+import 'journal_screen.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -16,111 +17,201 @@ class ProfileScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profile'),
+        title: Text('Profile', style: AppTypography.display2.copyWith(fontSize: 24)),
         actions: [
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
+          Container(
+            margin: const EdgeInsets.only(right: 12),
+            decoration: BoxDecoration(
+              color: context.surfaceElevated.withOpacity(0.3),
+              borderRadius: BorderRadius.circular(AppRadius.full),
+              border: Border.all(color: context.border, width: 0.5),
+            ),
+            child: IconButton(
+              icon: Icon(
                 isDark ? Icons.dark_mode : Icons.light_mode,
                 size: 18,
-                color: UIColors.gray500,
               ),
-              Switch(
-                value: isDark,
-                onChanged: (v) {
-                  ref.read(themeModeProvider.notifier).state = v;
-                },
-              ),
-            ],
+              color: context.textMuted,
+              onPressed: () {
+                ref.read(themeModeProvider.notifier).state = !isDark;
+              },
+            ),
           ),
-          const SizedBox(width: 8),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(UISpacing.md),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 100),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                CircleAvatar(
-                  radius: 32,
-                  backgroundColor: UIColors.primary,
-                  child: Text(
-                    user?.isNotEmpty == true
-                        ? user![0].toUpperCase()
-                        : '?',
-                    style: const TextStyle(
-                      color: Colors.white, fontSize: 24,
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(24),
+              decoration: AppEffects.glassCard(radius: AppRadius.xl),
+              child: Row(
+                children: [
+                  Container(
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [AppColors.primary, AppColors.primaryDark],
+                      ),
+                      borderRadius: BorderRadius.circular(AppRadius.lg),
+                      boxShadow: AppShadows.glow(AppColors.primary, intensity: 0.4),
+                    ),
+                    child: Center(
+                      child: Text(
+                        user?.isNotEmpty == true ? user![0].toUpperCase() : '?',
+                        style: AppTypography.display2.copyWith(
+                          color: AppColors.black, fontSize: 28,
+                        ),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(width: UISpacing.md),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(user ?? 'Focus Gardener',
-                      style: UITypography.heading2),
-                    Text('${session.elapsedSeconds ~/ 60} min focused',
-                      style: UITypography.body.copyWith(
-                        color: UIColors.gray500)),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: UISpacing.xl),
-            Text('Stats', style: UITypography.heading3),
-            const SizedBox(height: UISpacing.sm),
-            Row(
-              children: [
-                Expanded(child: _StatsTile(
-                  icon: Icons.timer, label: 'Total Focus',
-                  value: '${session.elapsedSeconds ~/ 60}m',
-                )),
-                const SizedBox(width: 8),
-                Expanded(child: _StatsTile(
-                  icon: Icons.check_circle, label: 'Sessions',
-                  value: session.status == SessionStatus.completed ? '1' : '0',
-                )),
-              ],
-            ),
-            const SizedBox(height: UISpacing.sm),
-            Row(
-              children: [
-                Expanded(child: _StatsTile(
-                  icon: Icons.local_fire_department, label: 'Streak',
-                  value: '0',
-                )),
-                const SizedBox(width: 8),
-                Expanded(child: _StatsTile(
-                  icon: Icons.emoji_events, label: 'Best Streak',
-                  value: '0',
-                )),
-              ],
-            ),
-            const SizedBox(height: UISpacing.xl),
-            Text('Achievements', style: UITypography.heading3),
-            const SizedBox(height: UISpacing.sm),
-            Expanded(
-              child: Center(
-                child: Text('Complete focus sessions to unlock achievements',
-                  style: UITypography.body.copyWith(color: UIColors.gray500),
-                  textAlign: TextAlign.center,
-                ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(user ?? 'Focus Gardener', style: AppTypography.heading1),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Container(
+                              width: 6, height: 6,
+                              decoration: const BoxDecoration(
+                                color: AppColors.primary,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Text('${session.elapsedSeconds ~/ 60} min focused',
+                              style: AppTypography.body.copyWith(color: context.textMuted)),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
-            const Divider(),
-            ListTile(
-              leading: const Icon(Icons.block),
-              title: const Text('Blocked Apps'),
-              subtitle: const Text('Choose apps to block during hard lock'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () {
-                Navigator.push(context, MaterialPageRoute(
-                  builder: (_) => const BlacklistScreen(),
-                ));
-              },
+            const SizedBox(height: 28),
+            Text('Statistics', style: AppTypography.heading1),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(child: _StatsTile(
+                  icon: Icons.timer_outlined, label: 'Total Focus',
+                  value: '${session.elapsedSeconds ~/ 60}m',
+                  color: AppColors.primary,
+                )),
+                const SizedBox(width: 10),
+                Expanded(child: _StatsTile(
+                  icon: Icons.check_circle_outlined, label: 'Sessions',
+                  value: session.status == SessionStatus.completed ? '1' : '0',
+                  color: AppColors.secondary,
+                )),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(child: _StatsTile(
+                  icon: Icons.local_fire_department_outlined, label: 'Streak',
+                  value: '0',
+                  color: AppColors.tertiary,
+                )),
+                const SizedBox(width: 10),
+                Expanded(child: _StatsTile(
+                  icon: Icons.emoji_events_outlined, label: 'Best Streak',
+                  value: '0',
+                  color: AppColors.warning,
+                )),
+              ],
+            ),
+            const SizedBox(height: 28),
+            Text('Achievements', style: AppTypography.heading1),
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(24),
+              decoration: AppEffects.glass(radius: AppRadius.lg),
+              child: Column(
+                children: [
+                  Text('🏆', style: const TextStyle(fontSize: 40)),
+                  const SizedBox(height: 8),
+                  Text('No achievements yet', style: AppTypography.heading2),
+                  const SizedBox(height: 4),
+                  Text('Complete focus sessions to unlock achievements',
+                    style: AppTypography.bodySmall.copyWith(color: context.textMuted)),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            Container(
+              decoration: BoxDecoration(
+                color: context.surfaceElevated.withOpacity(0.25),
+                borderRadius: BorderRadius.circular(AppRadius.lg),
+                border: Border.all(color: context.border, width: 0.5),
+              ),
+              child: Column(
+                children: [
+                  ListTile(
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(AppRadius.md),
+                      ),
+                      child: Icon(Icons.book_outlined, color: AppColors.primary, size: 20),
+                    ),
+                    title: Text('Session Journal', style: AppTypography.heading3),
+                    subtitle: Text('Reflections and session history',
+                      style: AppTypography.bodySmall.copyWith(color: context.textMuted)),
+                    trailing: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: context.border.withOpacity(0.3),
+                        borderRadius: BorderRadius.circular(AppRadius.sm),
+                      ),
+                      child: Icon(Icons.chevron_right, color: context.textMuted, size: 20),
+                    ),
+                    onTap: () {
+                      Navigator.push(context, MaterialPageRoute(
+                        builder: (_) => const JournalScreen(),
+                      ));
+                    },
+                  ),
+                  const Divider(height: 1, indent: 60, color: AppColorsLight.border),
+                  ListTile(
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppColors.error.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(AppRadius.md),
+                      ),
+                      child: const Icon(Icons.block, color: AppColors.error, size: 20),
+                    ),
+                    title: Text('Blocked Apps', style: AppTypography.heading3),
+                    subtitle: Text('Manage distractions during hard lock',
+                      style: AppTypography.bodySmall.copyWith(color: context.textMuted)),
+                    trailing: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: context.border.withOpacity(0.3),
+                        borderRadius: BorderRadius.circular(AppRadius.sm),
+                      ),
+                      child: Icon(Icons.chevron_right, color: context.textMuted, size: 20),
+                    ),
+                    onTap: () {
+                      Navigator.push(context, MaterialPageRoute(
+                        builder: (_) => const BlacklistScreen(),
+                      ));
+                    },
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -132,27 +223,28 @@ class ProfileScreen extends ConsumerWidget {
 class _StatsTile extends StatelessWidget {
   final IconData icon;
   final String label, value;
+  final Color color;
 
   const _StatsTile({
-    required this.icon, required this.label, required this.value,
+    required this.icon, required this.label, required this.value, required this.color,
   });
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     return Container(
-      padding: const EdgeInsets.all(UISpacing.md),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: cs.surface,
-        borderRadius: BorderRadius.circular(UIRadius.md),
-        border: Border.all(color: cs.outlineVariant),
+        color: context.surfaceElevated.withOpacity(0.25),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: color.withOpacity(0.12), width: 0.5),
       ),
       child: Column(
         children: [
-          Icon(icon, color: cs.primary, size: 20),
-          const SizedBox(height: 4),
-          Text(value, style: UITypography.heading3),
-          Text(label, style: UITypography.caption),
+          Icon(icon, color: color, size: 22),
+          const SizedBox(height: 8),
+          Text(value, style: AppTypography.heading1.copyWith(fontSize: 20)),
+          const SizedBox(height: 2),
+          Text(label, style: AppTypography.caption.copyWith(color: context.textMuted)),
         ],
       ),
     );
