@@ -229,6 +229,15 @@ class _GardenTreeTileState extends State<_GardenTreeTile>
     }
   }
 
+  String _emoji() {
+    switch (widget.tree.species) {
+      case 'oak': return '🌳';
+      case 'pine': return '🌲';
+      case 'cherry': return '🌸';
+      default: return '🌱';
+    }
+  }
+
   String _title() {
     switch (widget.tree.species) {
       case 'oak': return 'Oak';
@@ -286,11 +295,13 @@ class _GardenTreeTileState extends State<_GardenTreeTile>
                       entryProgress: _animController.value,
                       deathProgress: deathProgress,
                     ),
-                    const SizedBox(height: 8),
-                    Text(_title(), style: AppTypography.heading3.copyWith(
+                    const SizedBox(height: 6),
+                    Text(_emoji(), style: TextStyle(fontSize: 28)),
+                    const SizedBox(height: 2),
+                    Text(_title(), style: AppTypography.caption.copyWith(
                       color: alive ? context.textPrimary : context.textMuted,
                     )),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(

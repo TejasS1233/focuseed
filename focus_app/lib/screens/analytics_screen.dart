@@ -1,3 +1,4 @@
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/db/database.dart';
@@ -17,6 +18,8 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
   int _totalSessions = 0;
   int _streak = 0;
   Map<String, int>? _dailyTotals;
+  Map<String, int>? _monthlyTotals;
+  Map<String, int>? _tagSeconds;
   List<Session>? _recent;
   List<String> _availableTags = [];
   String? _selectedTag;
@@ -57,6 +60,10 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
     dao.getDistinctTags(userId).then((t) { if (mounted) setState(() => _availableTags = t); });
     dao.getDailyTotals(userId, DateTime.now().subtract(const Duration(days: 7)), DateTime.now())
         .then((d) { if (mounted) _parseDailyTotals(d); });
+    dao.getDailyTotals(userId, DateTime.now().subtract(const Duration(days: 30)), DateTime.now())
+        .then((d) { if (mounted) _parseMonthlyTotals(d); });
+    dao.getTaggedSeconds(userId, DateTime.now().subtract(const Duration(days: 30)), DateTime.now())
+        .then((d) { if (mounted) setState(() => _tagSeconds = d); });
   }
 
   void _parseDailyTotals(List<Map<String, dynamic>> raw) {
@@ -65,6 +72,14 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
       map[r['day'] as String] = r['total'] as int;
     }
     if (mounted) setState(() => _dailyTotals = map);
+  }
+
+  void _parseMonthlyTotals(List<Map<String, dynamic>> raw) {
+    final map = <String, int>{};
+    for (final r in raw) {
+      map[r['day'] as String] = r['total'] as int;
+    }
+    if (mounted) setState(() => _monthlyTotals = map);
   }
 
   @override
@@ -113,6 +128,18 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
               Text('This Week', style: AppTypography.heading1),
               const SizedBox(height: 12),
               _WeekChart(dailyTotals: _dailyTotals!),
+            ],
+            if (_monthlyTotals != null) ...[
+              const SizedBox(height: 28),
+              Text('Monthly Trend', style: AppTypography.heading1),
+              const SizedBox(height: 12),
+              _MonthlyChart(dailyTotals: _monthlyTotals!),
+            ],
+            if (_tagSeconds != null && _tagSeconds!.isNotEmpty && _availableTags.length >= 2) ...[
+              const SizedBox(height: 28),
+              Text('By Tag', style: AppTypography.heading1),
+              const SizedBox(height: 12),
+              _TagChart(tagSeconds: _tagSeconds!),
             ],
             if (_recent != null && _recent!.isNotEmpty) ...[
               const SizedBox(height: 28),
@@ -215,65 +242,305 @@ class _WeekChart extends StatelessWidget {
     }
   }
 
-  String _minutes(int seconds) => '${(seconds / 60).round()}m';
-
   @override
   Widget build(BuildContext context) {
     final entries = dailyTotals.entries.toList()
       ..sort((a, b) => a.key.compareTo(b.key));
 
-    final maxVal = entries.isEmpty
-        ? 0.0
-        : entries.map((e) => e.value).reduce((a, b) => a > b ? a : b).toDouble();
-
     final isDark = context.isDark;
-    final barColor = isDark ? AppColors.primary : AppColors.primaryDark;
 
     return Container(
-      height: 180,
+      height: 190,
       padding: const EdgeInsets.fromLTRB(8, 20, 8, 8),
       decoration: BoxDecoration(
         color: context.surfaceElevated.withOpacity(0.25),
         borderRadius: BorderRadius.circular(AppRadius.lg),
         border: Border.all(color: context.border.withOpacity(0.3), width: 0.5),
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: entries.isEmpty
-            ? [Expanded(child: Center(child: Text('No data this week', style: AppTypography.body.copyWith(color: context.textMuted))))]
-            : entries.map((e) {
-                final pct = maxVal > 0 ? e.value / maxVal : 0.0;
-                return Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 3),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        if (e.value >= 60)
-                          Text(_minutes(e.value), style: TextStyle(
-                            color: isDark ? AppColors.textSecondary : AppColorsLight.textSecondary,
-                            fontSize: 8,
-                            fontFamily: AppTypography.bodyFont,
-                          )),
-                        const SizedBox(height: 2),
-                        Container(
-                          height: (140 * pct).clamp(4.0, 140.0),
-                          decoration: BoxDecoration(
-                            color: pct > 0 ? barColor : barColor.withOpacity(0.15),
-                            borderRadius: BorderRadius.circular(3),
+      child: entries.isEmpty
+          ? Center(child: Text('No data this week', style: AppTypography.body.copyWith(color: context.textMuted)))
+          : BarChart(
+              BarChartData(
+                alignment: BarChartAlignment.center,
+                maxY: entries.map((e) => e.value).reduce((a, b) => a > b ? a : b).toDouble() * 1.15,
+                barTouchData: BarTouchData(
+                  enabled: true,
+                  touchTooltipData: BarTouchTooltipData(
+                    getTooltipItem: (_, __, ___, ____) => null,
+                  ),
+                ),
+                gridData: FlGridData(
+                  show: true,
+                  drawVerticalLine: false,
+                  horizontalInterval: null,
+                  getDrawingHorizontalLine: (value) => FlLine(
+                    color: context.border.withOpacity(0.15),
+                    strokeWidth: 0.5,
+                  ),
+                ),
+                borderData: FlBorderData(show: false),
+                titlesData: FlTitlesData(
+                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 20,
+                      getTitlesWidget: (value, _) {
+                        final i = value.toInt();
+                        if (i < 0 || i >= entries.length) return const SizedBox.shrink();
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 6),
+                          child: Text(
+                            _dayName(entries[i].key),
+                            style: TextStyle(
+                              color: isDark ? AppColors.textMuted : AppColorsLight.textMuted,
+                              fontSize: 9,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(_dayName(e.key), style: TextStyle(
-                          color: isDark ? AppColors.textMuted : AppColorsLight.textMuted,
-                          fontSize: 9,
-                          fontFamily: AppTypography.bodyFont,
-                        )),
-                      ],
+                        );
+                      },
                     ),
+                  ),
+                ),
+                barGroups: entries.asMap().entries.map((e) {
+                  final i = e.key;
+                  final entry = e.value;
+                  final pct = entry.value > 0 ? 1.0 : 0.3;
+                  final color = isDark ? AppColors.primary : AppColors.primaryDark;
+                  return BarChartGroupData(
+                    x: i,
+                    barRods: [
+                      BarChartRodData(
+                        toY: entry.value.toDouble(),
+                        color: color.withOpacity(pct),
+                        width: 20,
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(4),
+                          topRight: Radius.circular(4),
+                        ),
+                      ),
+                    ],
+                  );
+                }).toList(),
+              ),
+            ),
+    );
+  }
+}
+
+class _MonthlyChart extends StatelessWidget {
+  final Map<String, int> dailyTotals;
+
+  const _MonthlyChart({required this.dailyTotals});
+
+  @override
+  Widget build(BuildContext context) {
+    final entries = dailyTotals.entries.toList()
+      ..sort((a, b) => a.key.compareTo(b.key));
+
+    final isDark = context.isDark;
+
+    if (entries.isEmpty) {
+      return Container(
+        height: 190,
+        decoration: BoxDecoration(
+          color: context.surfaceElevated.withOpacity(0.25),
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+          border: Border.all(color: context.border.withOpacity(0.3), width: 0.5),
+        ),
+        child: Center(child: Text('No monthly data yet', style: AppTypography.body.copyWith(color: context.textMuted))),
+      );
+    }
+
+    final maxY = entries.map((e) => e.value).reduce((a, b) => a > b ? a : b).toDouble();
+
+    String formatDate(String dateKey) {
+      final parts = dateKey.split('-');
+      if (parts.length != 3) return '';
+      return '${parts[1]}/${parts[2]}';
+    }
+
+    return Container(
+      height: 190,
+      padding: const EdgeInsets.fromLTRB(8, 20, 8, 8),
+      decoration: BoxDecoration(
+        color: context.surfaceElevated.withOpacity(0.25),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: context.border.withOpacity(0.3), width: 0.5),
+      ),
+      child: LineChart(
+        LineChartData(
+          minY: 0,
+          maxY: maxY * 1.15,
+          gridData: FlGridData(
+            show: true,
+            drawVerticalLine: false,
+            getDrawingHorizontalLine: (value) => FlLine(
+              color: context.border.withOpacity(0.15),
+              strokeWidth: 0.5,
+            ),
+          ),
+          borderData: FlBorderData(show: false),
+          titlesData: FlTitlesData(
+            topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            bottomTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                reservedSize: 20,
+                interval: (entries.length / 6).ceilToDouble().clamp(1, 5),
+                getTitlesWidget: (value, _) {
+                  final i = value.toInt();
+                  if (i < 0 || i >= entries.length) return const SizedBox.shrink();
+                  return Padding(
+                    padding: const EdgeInsets.only(top: 6),
+                    child: Text(
+                      formatDate(entries[i].key),
+                      style: TextStyle(
+                        color: isDark ? AppColors.textMuted : AppColorsLight.textMuted,
+                        fontSize: 8,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+          lineTouchData: LineTouchData(
+            enabled: true,
+            touchTooltipData: LineTouchTooltipData(
+              getTooltipItems: (touchedSpots) => touchedSpots.map((spot) {
+                final i = spot.spotIndex;
+                final secs = entries[i].value;
+                final mins = (secs / 60).round();
+                return LineTooltipItem(
+                  '${mins}m',
+                  TextStyle(color: isDark ? AppColors.textPrimary : AppColorsLight.textPrimary, fontSize: 11),
+                );
+              }).toList(),
+            ),
+          ),
+          lineBarsData: [
+            LineChartBarData(
+              spots: entries.asMap().entries.map((e) => FlSpot(e.key.toDouble(), e.value.value.toDouble())).toList(),
+              isCurved: true,
+              preventCurveOverShooting: true,
+              color: AppColors.primary,
+              barWidth: 2,
+              isStrokeCapRound: true,
+              dotData: FlDotData(
+                show: true,
+                getDotPainter: (spot, _, __, ___) => FlDotCirclePainter(
+                  radius: 2.5,
+                  color: AppColors.primary,
+                  strokeWidth: 0,
+                ),
+              ),
+              belowBarData: BarAreaData(
+                show: true,
+                color: AppColors.primary.withOpacity(0.08),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TagChart extends StatelessWidget {
+  final Map<String, int> tagSeconds;
+
+  const _TagChart({required this.tagSeconds});
+
+  static const _colors = [
+    AppColors.primary,
+    AppColors.tertiary,
+    AppColors.secondary,
+    AppColors.error,
+    Color(0xFF3B82F6),
+    Color(0xFFEC4899),
+    Color(0xFF14B8A6),
+    Color(0xFFF97316),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final total = tagSeconds.values.fold<int>(0, (a, b) => a + b);
+    final isDark = context.isDark;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: context.surfaceElevated.withOpacity(0.25),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: context.border.withOpacity(0.3), width: 0.5),
+      ),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 120,
+            height: 120,
+            child: PieChart(
+              PieChartData(
+                sectionsSpace: 1,
+                centerSpaceRadius: 28,
+                sections: tagSeconds.entries.toList().asMap().entries.map((e) {
+                  final i = e.key;
+                  final seconds = e.value.value;
+                  final pct = total > 0 ? seconds / total : 0.0;
+                  return PieChartSectionData(
+                    value: pct * 100,
+                    color: _colors[i % _colors.length],
+                    radius: i == 0 ? 28 : 24,
+                    title: '${(pct * 100).round()}%',
+                    titleStyle: TextStyle(
+                      color: isDark ? AppColors.surface : AppColors.white,
+                      fontSize: 9,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+          ),
+          const SizedBox(width: 20),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: tagSeconds.entries.toList().asMap().entries.map((e) {
+                final i = e.key;
+                final tag = e.value.key;
+                final seconds = e.value.value;
+                final mins = (seconds / 60).round();
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 3),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: _colors[i % _colors.length],
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(tag, style: AppTypography.caption.copyWith(color: context.textPrimary)),
+                      ),
+                      Text('${mins}m', style: AppTypography.caption.copyWith(color: context.textMuted)),
+                    ],
                   ),
                 );
               }).toList(),
+            ),
+          ),
+        ],
       ),
     );
   }
