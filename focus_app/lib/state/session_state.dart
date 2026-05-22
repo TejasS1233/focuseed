@@ -6,8 +6,10 @@ import '../core/services/audio_mixer_service.dart';
 import '../core/db/database.dart';
 import '../core/db/daos/session_dao.dart';
 import '../core/db/daos/achievement_dao.dart';
+import '../core/services/tree_lifecycle_service.dart';
 import '../core/services/widget_service.dart';
 import '../core/services/notification_service.dart';
+import '../core/db/daos/decoration_dao.dart';
 import 'app_state.dart';
 
 enum SessionStatus { idle, running, paused, completed, abandoned }
@@ -71,6 +73,7 @@ class SessionState {
 class SessionNotifier extends Notifier<SessionState> {
   Timer? _timer;
   int _startSeconds = 0;
+  int _pausedElapsedSeconds = 0;
   final AudioMixerService _mixer = AudioMixerService();
   final LockService _lock = LockService();
   bool _mixerReady = false;
@@ -145,13 +148,13 @@ class SessionNotifier extends Notifier<SessionState> {
     _timer?.cancel();
     await _lock.stopLock();
     _mixer.stopAll();
-    _persistSession(completed);
+    await _persistSession(completed);
     state = state.copyWith(
       status: completed ? SessionStatus.completed : SessionStatus.abandoned,
     );
   }
 
-  void _persistSession(bool completed) async {
+  Future<void> _persistSession(bool completed) async {
     final userId = ref.read(userProvider);
     final sessionId = state.sessionId;
     if (userId == null || sessionId == null) return;
@@ -165,7 +168,7 @@ class SessionNotifier extends Notifier<SessionState> {
 
     final score = completed ? await dao.getFocusScore(userId) : 0;
 
-    dao.insertSession(Session(
+    await dao.insertSession(Session(
       id: sessionId,
       userId: userId,
       mode: state.mode,
@@ -184,8 +187,18 @@ class SessionNotifier extends Notifier<SessionState> {
     state = state.copyWith(focusScore: score);
 
     if (completed) {
-      AchievementDao(db).checkAndUnlock(userId);
-      _updateWidget(db, userId);
+      await AchievementDao(db).checkAndUnlock(userId);
+      await TreeLifecycleService(db).plantTree(
+        userId: userId,
+        sessionId: sessionId,
+        durationSeconds: state.elapsedSeconds,
+        mode: state.mode,
+      );
+      final decoration = await DecorationDao(db).randomForSession(userId);
+      await DecorationDao(db).place(decoration);
+      final streak = await dao.getCurrentStreak(userId);
+      await db.updateLongestStreak(userId, streak);
+      await _updateWidget(db, userId);
       _showSessionNotification();
       _checkBreakReminder();
     }
@@ -278,6 +291,17 @@ class SessionNotifier extends Notifier<SessionState> {
         state = state.copyWith(status: SessionStatus.paused);
       } else {
         _timer?.cancel();
+        _pausedElapsedSeconds = state.elapsedSeconds;
+      }
+    } else if (lifecycleState == AppLifecycleState.resumed) {
+      if (state.mode == 'soft' && _timer == null) {
+        _startSeconds =
+            (DateTime.now().millisecondsSinceEpoch ~/ 1000) - _pausedElapsedSeconds;
+        _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+          final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+          state = state.copyWith(elapsedSeconds: now - _startSeconds);
+        });
+        _mixer.playAll();
       }
     }
   }

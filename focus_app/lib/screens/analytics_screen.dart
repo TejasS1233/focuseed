@@ -44,7 +44,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
         _recent = tagged.take(10).toList();
       });
       final range = DateTime.now().subtract(const Duration(days: 30));
-      dao.getDailyTotals(userId, range, DateTime.now()).then((d) { if (mounted) _parseDailyTotals(d); });
+      dao.getDailyTotals(userId, range, DateTime.now()).then((d) { if (mounted) _parseMonthlyTotals(d); });
     } else {
       final sessions = await dao.getSessionsByUser(userId);
       final completed = sessions.where((s) => s.outcome == 'completed').toList();

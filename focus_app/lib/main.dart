@@ -8,12 +8,20 @@ import 'screens/garden_screen.dart';
 import 'screens/profile_screen.dart';
 import 'theme/app_theme.dart';
 import 'theme/theme.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'core/services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await NotificationService.init();
-  runApp(const ProviderScope(child: FocusGardenApp()));
+  final prefs = await SharedPreferences.getInstance();
+  final isDark = prefs.getBool('theme_dark') ?? true;
+  runApp(ProviderScope(
+    overrides: [
+      initialDarkProvider.overrideWith((ref) => isDark),
+    ],
+    child: const FocusGardenApp(),
+  ));
 }
 
 class FocusGardenApp extends ConsumerWidget {

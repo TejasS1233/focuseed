@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 class LockService {
@@ -15,13 +16,17 @@ class LockService {
         'hardLock': hardLock,
         'blacklist': blacklist,
       });
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('LockService.startLock failed: $e');
+    }
   }
 
   Future<void> stopLock() async {
     try {
       await _channel.invokeMethod('stopLock');
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('LockService.stopLock failed: $e');
+    }
   }
 
   static Future<List<Map<String, String>>> getInstalledApps() async {
@@ -31,7 +36,8 @@ class LockService {
       return (result as List)
           .map((e) => Map<String, String>.from(e as Map))
           .toList();
-    } catch (_) {
+    } catch (e) {
+      debugPrint('LockService.getInstalledApps failed: $e');
       return [];
     }
   }
@@ -39,7 +45,8 @@ class LockService {
   static Future<bool> hasOverlayPermission() async {
     try {
       return await _appChannel.invokeMethod('hasOverlayPermission') as bool;
-    } catch (_) {
+    } catch (e) {
+      debugPrint('LockService.hasOverlayPermission failed: $e');
       return false;
     }
   }
@@ -47,13 +54,16 @@ class LockService {
   static Future<void> openOverlaySettings() async {
     try {
       await _appChannel.invokeMethod('openOverlaySettings');
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('LockService.openOverlaySettings failed: $e');
+    }
   }
 
   static Future<bool> isAccessibilityServiceEnabled() async {
     try {
       return await _appChannel.invokeMethod('isAccessibilityServiceEnabled') as bool;
-    } catch (_) {
+    } catch (e) {
+      debugPrint('LockService.isAccessibilityServiceEnabled failed: $e');
       return false;
     }
   }
@@ -61,6 +71,8 @@ class LockService {
   static Future<void> openAccessibilitySettings() async {
     try {
       await _appChannel.invokeMethod('openAccessibilitySettings');
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('LockService.openAccessibilitySettings failed: $e');
+    }
   }
 }

@@ -10,17 +10,11 @@ final themeModeProvider = NotifierProvider<ThemeNotifier, bool>(
   ThemeNotifier.new,
 );
 
+final initialDarkProvider = Provider<bool>((ref) => true);
+
 class ThemeNotifier extends Notifier<bool> {
   @override
-  bool build() {
-    SharedPreferences.getInstance().then((prefs) {
-      final saved = prefs.getBool('theme_dark');
-      if (saved != null && saved != state) {
-        state = saved;
-      }
-    });
-    return true;
-  }
+  bool build() => ref.read(initialDarkProvider);
 
   Future<void> toggle() async {
     final newValue = !state;

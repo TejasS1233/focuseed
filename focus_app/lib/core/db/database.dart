@@ -182,6 +182,15 @@ class AppDatabase extends _$AppDatabase {
       createdAt: Value(DateTime.now()),
     ));
   }
+
+  Future<void> updateLongestStreak(String userId, int streak) async {
+    final user = await (select(users)..where((u) => u.id.equals(userId))).getSingleOrNull();
+    if (user != null && streak > user.longestStreak) {
+      await (update(users)..where((u) => u.id.equals(userId))).write(UsersCompanion(
+        longestStreak: Value(streak),
+      ));
+    }
+  }
 }
 
 LazyDatabase _openConnection() {
