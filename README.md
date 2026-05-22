@@ -1,29 +1,49 @@
 # Focuseed
 
-A focus timer app that turns your consistency into a living garden. Complete deep work sessions to plant and grow trees. Skip too many days and they wilt.
+A focus timer app that turns your consistency into a living garden. Complete deep work sessions to plant and grow trees. Neglect them and they wilt.
+
+<p float="left">
+  <img src="images/home page.jpeg" width="200" />
+  <img src="images/garden.jpeg" width="200" />
+  <img src="images/analytics.jpeg" width="200" />
+  <img src="images/profile.jpeg" width="200" />
+</p>
 
 ## Features
 
-- **Focus Timer** — Soft Focus & Hard Lock (grayscale, notification suppression)
-- **Growing Garden** — Trees grow with focus sessions, wilt without care
-- **Analytics Dashboard** — Charts, streaks, tags, focus score
-- **Sound Mixer** — 5-track ambient audio mixing
-- **Session Journal** — Reflection prompts with history
-- **Home Screen Widget** — Streak & minutes (Android)
-- **App Blacklist** — Block distractions during hard lock (Android)
-- **Privacy First** — All data stays on device. No accounts, no cloud.
+- **Focus Timer** - Soft Focus & Hard Lock (grayscale overlay, notification suppression)
+- **Growing Garden** - Plant trees with each session; they grow with consistency and wilt without care
+- **Analytics Dashboard** - Charts, streaks, tags, focus score, monthly trends
+- **Sound Mixer** - Mix 5 ambient tracks (rain, lofi, white noise, forest, drone)
+- **Session Journal** - Post-session reflections with history
+
+<p float="left">
+  <img src="images/new_session.jpeg" width="200" />
+  <img src="images/session journal.jpeg" width="200" />
+  <img src="images/focus score.jpeg" width="200" />
+</p>
+
+- **App Blacklist** - Block distracting apps across all sessions (Android)
+
+<p float="left">
+  <img src="images/block.jpeg" width="200" />
+  <img src="images/perms.jpeg" width="200" />
+</p>
+
+- **Home Screen Widget** - Streak & minutes at a glance (Android)
+
+<img src="images/widget.jpeg" width="200" />
+- **Privacy First** - All data stays on device. No accounts, no cloud.
 
 ## Download APK
 
-Pre-built APKs are in the `downloads/` folder:
+Pre-built APKs are in the `downloads/` folder of this repo:
 
 | File | Device |
 |------|--------|
 | `[ARM64] Focuseed v1.0.0.apk` | Most modern Android phones |
 | `[ARM32] Focuseed v1.0.0 (older phones).apk` | Older 32-bit devices |
 | `[x86_64] Focuseed v1.0.0 (emulator).apk` | Android emulators |
-
-Sideload onto your device to test without building from source.
 
 ## Getting Started
 
@@ -39,19 +59,18 @@ flutter run
 ```
 lib/
   core/
-    db/          Drift database (SQLite) — tables and DAOs
+    db/          Drift database (SQLite) - tables and DAOs
     services/    Session logic, tree lifecycle, streaks, audio, lock, notifications
   state/         Riverpod providers
   screens/       UI screens (home, focus, garden, analytics, journal, profile, etc.)
   theme/         Theme configuration (light/dark)
   components/    Reusable UI widgets
 android/app/src/main/kotlin/com/focusapp/focus_app/
-  FocusWidgetProvider.kt      Home screen widget
-  FocusAccessibilityService.kt  Blacklist enforcement
-  FocusForegroundService.kt     Hard lock foreground service
-  OverlayManager.kt             Grayscale overlay
+  FocusWidgetProvider.kt          Home screen widget
+  FocusAccessibilityService.kt    Blacklist enforcement
+  FocusForegroundService.kt       Hard lock foreground service
+  OverlayManager.kt               Grayscale overlay
 ```
-
 
 ## Development
 
@@ -68,8 +87,8 @@ Configuration points:
 
 ## License
 
-MIT — see [LICENSE](LICENSE.md) for details.
+MIT - see [LICENSE](LICENSE.md) for details.
 
 ## Contributing
 
-Contributions are welcome! See [CONTRIBUTING](CONTRIBUTING.md) for guidelines.
+Contributions welcome! See [CONTRIBUTING](CONTRIBUTING.md) for guidelines.
