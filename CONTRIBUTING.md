@@ -1,6 +1,6 @@
-# Contributing to Focus Garden
+# Contributing to Focuseed
 
-Thank you for considering contributing to Focus Garden! This document outlines the guidelines for contributing to this project.
+Thank you for considering contributing to Focuseed! This document outlines the guidelines for contributing to this project.
 
 ## How to Contribute
 
@@ -54,4 +54,4 @@ Be respectful, constructive, and inclusive. Everyone is welcome to contribute.
 
 ---
 
-Thanks for helping make Focus Garden better! 🌱
+Thanks for helping make Focuseed better! 🌱

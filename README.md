@@ -13,6 +13,18 @@ A focus timer app that turns your consistency into a living garden. Complete dee
 - **App Blacklist** — Block distractions during hard lock (Android)
 - **Privacy First** — All data stays on device. No accounts, no cloud.
 
+## Download APK
+
+Pre-built APKs are in the `downloads/` folder:
+
+| File | Device |
+|------|--------|
+| `[ARM64] Focuseed v1.0.0.apk` | Most modern Android phones |
+| `[ARM32] Focuseed v1.0.0 (older phones).apk` | Older 32-bit devices |
+| `[x86_64] Focuseed v1.0.0 (emulator).apk` | Android emulators |
+
+Sideload onto your device to test without building from source.
+
 ## Getting Started
 
 ```bash
