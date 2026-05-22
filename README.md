@@ -2,6 +2,17 @@
 
 A focus timer app that turns your consistency into a living garden. Complete deep work sessions to plant and grow trees. Skip too many days and they wilt.
 
+## Features
+
+- **Focus Timer** — Soft Focus & Hard Lock (grayscale, notification suppression)
+- **Growing Garden** — Trees grow with focus sessions, wilt without care
+- **Analytics Dashboard** — Charts, streaks, tags, focus score
+- **Sound Mixer** — 5-track ambient audio mixing
+- **Session Journal** — Reflection prompts with history
+- **Home Screen Widget** — Streak & minutes (Android)
+- **App Blacklist** — Block distractions during hard lock (Android)
+- **Privacy First** — All data stays on device. No accounts, no cloud.
+
 ## Getting Started
 
 ```bash
@@ -9,12 +20,6 @@ cd focus_app
 flutter pub get
 dart run build_runner build
 flutter run
-```
-
-Build a release APK:
-
-```bash
-flutter build apk --release --split-per-abi
 ```
 
 ## Architecture
@@ -35,9 +40,6 @@ android/app/src/main/kotlin/com/focusapp/focus_app/
   OverlayManager.kt             Grayscale overlay
 ```
 
-**State management:** Riverpod. `SessionNotifier` drives the focus timer and coordinates lock/audio services. `GardenNotifier` loads trees from the database.
-
-**Database:** Drift with SQLite. Tables: Users, Sessions, Trees, Achievements, JournalEntries, BlacklistEntries, Decorations, Challenges, Schedules.
 
 ## Development
 
