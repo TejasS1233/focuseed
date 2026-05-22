@@ -7,7 +7,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
-import android.os.Build
+import android.util.Log
 import android.widget.RemoteViews
 
 class FocusWidgetProvider : AppWidgetProvider() {
@@ -18,14 +18,27 @@ class FocusWidgetProvider : AppWidgetProvider() {
         appWidgetIds: IntArray
     ) {
         for (appWidgetId in appWidgetIds) {
-            updateWidget(context, appWidgetManager, appWidgetId)
+            try {
+                updateWidget(context, appWidgetManager, appWidgetId)
+            } catch (e: Exception) {
+                Log.e("FocusWidget", "Error updating widget $appWidgetId", e)
+            }
+        }
+    }
+
+    override fun onEnabled(context: Context) {
+        try {
+            updateAllWidgets(context)
+        } catch (e: Exception) {
+            Log.e("FocusWidget", "Error in onEnabled", e)
         }
     }
 
     companion object {
-        private const val PREFS_NAME = "home_widget_prefs"
+        private const val PREFS_NAME = "HomeWidgetPreferences"
         private const val KEY_STREAK = "streak"
         private const val KEY_TODAY = "today_minutes"
+        private const val TAG = "FocusWidget"
 
         fun updateWidget(context: Context, appWidgetManager: AppWidgetManager, appWidgetId: Int) {
             val prefs: SharedPreferences =
@@ -38,11 +51,6 @@ class FocusWidgetProvider : AppWidgetProvider() {
             views.setTextViewText(R.id.widget_streak_label, "DAY STREAK")
             views.setTextViewText(R.id.widget_today, "$todayMinutes")
             views.setTextViewText(R.id.widget_today_label, "MIN TODAY")
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                views.setFloat(R.id.widget_title, "setLetterSpacing", 0.16f)
-                views.setFloat(R.id.widget_button, "setLetterSpacing", 0.14f)
-            }
 
             val intent = Intent(context, MainActivity::class.java)
             intent.action = Intent.ACTION_MAIN

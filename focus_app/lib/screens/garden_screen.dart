@@ -136,6 +136,7 @@ class _GardenScreenState extends ConsumerState<GardenScreen> {
                           ),
                           itemCount: garden.trees.length,
                           itemBuilder: (_, i) => _GardenTreeTile(
+                            key: ValueKey(garden.trees[i].id),
                             tree: garden.trees[i],
                             index: i,
                           ),
@@ -167,14 +168,14 @@ class _GardenTreeTile extends StatefulWidget {
   final dynamic tree;
   final int index;
 
-  const _GardenTreeTile({required this.tree, required this.index});
+  const _GardenTreeTile({super.key, required this.tree, required this.index});
 
   @override
   State<_GardenTreeTile> createState() => _GardenTreeTileState();
 }
 
 class _GardenTreeTileState extends State<_GardenTreeTile>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late AnimationController _animController;
   late Animation<double> _scaleAnim;
   late Animation<double> _opacityAnim;
