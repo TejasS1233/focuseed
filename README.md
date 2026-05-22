@@ -1,25 +1,6 @@
 # Focuseed
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE.md)
-
 A focus timer app that turns your consistency into a living garden. Complete deep work sessions to plant and grow trees. Skip too many days and they wilt.
-
-## Features
-
-- **Focus Timer** — Soft Focus for everyday work. Hard Lock for deep work: screen goes grayscale, notifications suppressed (Android), timer cannot be stopped early. Hard lock sessions earn 1.5x growth bonus.
-- **Growing Garden** — Each session plants a tree. Growth scales with session duration (5 stages from 15 min to 4+ hours). Trees wilt after 48 hours without watering. Species include oak, cherry, pine, and more with emoji icons.
-- **Focus Tags** — Tag your sessions (e.g., coding, reading, writing) and track time breakdowns on the analytics page.
-- **Sound Mixer** — 5-track multi-layer ambient audio mixing. Mix and match rain, wind, fire, birds, and waves.
-- **Analytics Dashboard** — Bar chart (daily totals), 30-day trend line chart, tag distribution pie chart, focus score, completion rate, streak counter, total hours.
-- **Session Journal** — Reflection prompts and a history timeline with searchable entries.
-- **Daily Focus Goal** — Set a daily target and track progress with a ring indicator.
-- **Achievements & Challenges** — Unlock milestones for streaks, sessions completed, and growth milestones.
-- **Home Screen Widget (Android)** — Shows current streak and today's focused minutes.
-- **App Blacklist (Android)** — Block distracting apps during Hard Lock mode. Requires Accessibility Service permission.
-- **Notifications** — Session reminders and break alerts.
-- **Dark & Light Theme** — Toggle between modes. Persisted across sessions.
-- **Onboarding** — First-launch setup flow for permissions and preferences.
-- **Privacy First** — Everything stays on device. Local SQLite database via Drift. No accounts, no cloud, no tracking.
 
 ## Getting Started
 
