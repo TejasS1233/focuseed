@@ -2,12 +2,12 @@
 
 A focus timer app that turns your consistency into a living garden. Complete deep work sessions to plant and grow trees. Neglect them and they wilt.
 
-<p float="left">
-  <img src="images/home page.jpeg" width="200" />
-  <img src="images/garden.jpeg" width="200" />
-  <img src="images/analytics.jpeg" width="200" />
-  <img src="images/profile.jpeg" width="200" />
-</p>
+<div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; margin-bottom: 20px;">
+  <img src="images/home page.jpeg" height="400" style="margin: 6px; border-radius: 8px;" />
+  <img src="images/garden.jpeg" height="400" style="margin: 6px; border-radius: 8px;" />
+  <img src="images/analytics.jpeg" height="400" style="margin: 6px; border-radius: 8px;" />
+  <img src="images/profile.jpeg" height="400" style="margin: 6px; border-radius: 8px;" />
+</div>
 
 ## Features
 
@@ -17,22 +17,26 @@ A focus timer app that turns your consistency into a living garden. Complete dee
 - **Sound Mixer** - Mix 5 ambient tracks (rain, lofi, white noise, forest, drone)
 - **Session Journal** - Post-session reflections with history
 
-<p float="left">
-  <img src="images/new_session.jpeg" width="200" />
-  <img src="images/session journal.jpeg" width="200" />
-  <img src="images/focus score.jpeg" width="200" />
-</p>
+<div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; margin-bottom: 20px;">
+  <img src="images/new_session.jpeg" height="400" style="margin: 6px; border-radius: 8px;" />
+  <img src="images/session journal.jpeg" height="400" style="margin: 6px; border-radius: 8px;" />
+  <img src="images/focus score.jpeg" height="400" style="margin: 6px; border-radius: 8px;" />
+</div>
+</div>
 
 - **App Blacklist** - Block distracting apps across all sessions (Android)
 
-<p float="left">
-  <img src="images/block.jpeg" width="200" />
-  <img src="images/perms.jpeg" width="200" />
-</p>
+<div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; margin-bottom: 20px;">
+  <img src="images/block.jpeg" height="400" style="margin: 6px; border-radius: 8px;" />
+  <img src="images/perms.jpeg" height="400" style="margin: 6px; border-radius: 8px;" />
+</div>
 
 - **Home Screen Widget** - Streak & minutes at a glance (Android)
 
-<img src="images/widget.jpeg" width="200" />
+<div style="display: flex; justify-content: center; margin: 16px 0;">
+  <img src="images/widget.jpeg" width="200" style="border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);" />
+</div>
+
 - **Privacy First** - All data stays on device. No accounts, no cloud.
 
 ## Download APK
